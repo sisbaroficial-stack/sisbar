@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Proveedor - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{% url 'proveedores:listar' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+            <h1 class="h2 mb-1">Nuevo Proveedor</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">Información Básica</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Nombre *</label>
+                                <input type="text" name="nombre" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">NIT / RUT</label>
+                                <input type="text" name="nit" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">Información de Contacto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Persona de Contacto</label>
+                                <input type="text" name="contacto" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Dirección</label>
+                            <textarea name="direccion" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Ciudad</label>
+                                <input type="text" name="ciudad" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Calificación</label>
+                                <select name="calificacion" class="form-select">
+                                    <option value="1">⭐ Muy Malo</option>
+                                    <option value="2">⭐⭐ Malo</option>
+                                    <option value="3" selected>⭐⭐⭐ Regular</option>
+                                    <option value="4">⭐⭐⭐⭐ Bueno</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Notas</label>
+                            <textarea name="notas" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-body">
+                        <button type="submit" class="btn btn-gradient w-100 py-3">
+                            <i class="bi bi-save me-2"></i>Crear Proveedor
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

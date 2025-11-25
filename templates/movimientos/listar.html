@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">📊 Historial de Movimientos</h1>
+            <p class="text-muted">Registro completo de entradas y salidas</p>
+        </div>
+    </div>
+    
+    <div class="card card-custom border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Período</label>
+                    <select name="dias" class="form-select" onchange="this.form.submit()">
+                        <option value="7" {% if dias == 7 %}selected{% endif %}>Últimos 7 días</option>
+                        <option value="15" {% if dias == 15 %}selected{% endif %}>Últimos 15 días</option>
+                        <option value="30" {% if dias == 30 %}selected{% endif %}>Últimos 30 días</option>
+                        <option value="60" {% if dias == 60 %}selected{% endif %}>Últimos 60 días</option>
+                        <option value="90" {% if dias == 90 %}selected{% endif %}>Últimos 90 días</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card card-custom border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Stock</th>
+                            <th>Usuario</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if movimientos %}
+                            {% for mov in movimientos %}
+                            <tr>
+                                <td><small>{{ mov.fecha|date:"d/m/Y H:i" }}</small></td>
+                                <td>
+                                    <span class="badge bg-{% if mov.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                                        {{ mov.get_tipo_icono }} {{ mov.get_tipo_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>{{ mov.producto.nombre }}</strong>
+                                    <br><small class="text-muted">{{ mov.producto.codigo }}</small>
+                                </td>
+                                <td>
+                                    <strong class="{% if mov.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
+                                        {% if mov.tipo == 'ENTRADA' %}+{% else %}-{% endif %}{{ mov.cantidad }}
+                                    </strong>
+                                </td>
+                                <td><small>{{ mov.cantidad_anterior }} → {{ mov.cantidad_nueva }}</small></td>
+                                <td><small>{{ mov.usuario.username }}</small></td>
+                                <td><small>{{ mov.motivo|default:"-" }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-5">
+                                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                    No hay movimientos en este período
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

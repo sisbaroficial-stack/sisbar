@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SISBAR {% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Navbar personalizado */
+        .navbar-custom {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            min-height: 100vh;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px 0;
+        }
+        
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #4b5563;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+        
+        .sidebar-link i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+        
+        /* Main content */
+        .main-content {
+            padding: 30px;
+            background: var(--light-color);
+            min-height: 100vh;
+        }
+        
+        /* Cards */
+        .card-custom {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card-custom:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Buttons */
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        
+        /* Alerts mejorados */
+        .alert {
+            border: none;
+            border-radius: 10px;
+            padding: 15px 20px;
+        }
+        
+        /* Tables */
+        .table-custom {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* User dropdown */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* Badges personalizados */
+        .badge-custom {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        /* Loading spinner */
+        .spinner-custom {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                width: 250px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.show {
+                left: 0;
+            }
+        }
+
+        /* Modo Oscuro */
+        body.modo-oscuro {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e4;
+        }
+        
+        body.modo-oscuro .navbar-custom {
+            background: rgba(30, 30, 30, 0.95);
+            color: #e4e4e4;
+        }
+        
+        body.modo-oscuro .sidebar {
+            background: #1a1a2e;
+            color: #e4e4e4;
+        }
+        
+        body.modo-oscuro .sidebar-link {
+            color: #b8b8b8;
+        }
+        
+        body.modo-oscuro .sidebar-link:hover,
+        body.modo-oscuro .sidebar-link.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 0%, transparent 100%);
+            color: #667eea;
+        }
+        
+        body.modo-oscuro .main-content {
+            background: #0f0f1e;
+        }
+        
+        body.modo-oscuro .card-custom {
+            background: #1a1a2e;
+            color: #e4e4e4;
+        }
+        
+        body.modo-oscuro .table {
+            color: #e4e4e4;
+        }
+        
+        body.modo-oscuro .table-hover tbody tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        body.modo-oscuro .form-control,
+        body.modo-oscuro .form-select {
+            background: #16213e;
+            color: #e4e4e4;
+            border-color: #667eea;
+        }
+        
+        body.modo-oscuro .form-control:focus,
+        body.modo-oscuro .form-select:focus {
+            background: #1a1a2e;
+            color: #e4e4e4;
+            border-color: #764ba2;
+        }
+        
+        body.modo-oscuro .text-muted {
+            color: #b8b8b8 !important;
+        }
+        
+        body.modo-oscuro .alert-light {
+            background: #16213e;
+            color: #e4e4e4;
+            border-color: #667eea;
+        }
+
+
+
+
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    
+    {% if user.is_authenticated %}
+    <!-- Navbar para usuarios autenticados -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard:home' %}">
+                🛒 SISBAR
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Notificaciones -->
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link position-relative" href="#" data-bs-toggle="dropdown">
+                            <i class="bi bi-bell fs-5"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                3
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">Notificaciones</h6></li>
+                            <li><a class="dropdown-item" href="#"><small>Nueva alerta de inventario</small></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-center" href="#">Ver todas</a></li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Usuario -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+                            <div class="user-avatar me-2">
+                                {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                            </div>
+                            <span>{{ user.first_name }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><h6 class="dropdown-header">{{ user.get_rol_display }}</h6></li>
+                            <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}">
+                                <i class="bi bi-person me-2"></i>Mi Perfil
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'usuarios:cambiar_password' %}">
+                                <i class="bi bi-key me-2"></i>Cambiar Contraseña
+                            </a></li>
+                            
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                               <div class="px-3 py-2">
+                                   <div class="form-check form-switch">
+                                       <input class="form-check-input" type="checkbox" id="modoOscuroToggle">
+                                       <label class="form-check-label" for="modoOscuroToggle">
+                                           <i class="bi bi-moon-stars me-2"></i>Modo Oscuro
+                                       </label>
+                                    </div>
+                                </div>
+                            </li>
+
+
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'usuarios:logout' %}">
+                                <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                               href="{% url 'dashboard:home' %}">
+                                <i class="bi bi-speedometer2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        
+                        <!-- Solo para usuarios con permisos -->
+                        {% if user.puede_gestionar_inventario %}
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.url_name == 'listar_productos' %}active{% endif %}" 
+                                href="{% url 'inventario:listar_productos' %}">
+                                <i class="bi bi-box-seam"></i>
+                                Productos
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.url_name == 'descontar_producto' %}active{% endif %}" 
+                               href="{% url 'inventario:descontar_producto' %}">
+                                <i class="bi bi-arrow-down-circle"></i>
+                                Descontar Producto
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item">
+                                <a class="sidebar-link {% if request.resolver_match.app_name == 'categorias' %}active{% endif %}" 
+                                   href="{% url 'categorias:listar' %}">
+                                <i class="bi bi-tags"></i>
+                                Categorías
+                            </a>
+                        </li>
+                        {% if user.puede_aprobar %}
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.app_name == 'proveedores' %}active{% endif %}" 
+                               href="{% url 'proveedores:listar' %}">
+                                <i class="bi bi-truck"></i>
+                                Proveedores
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.app_name == 'movimientos' %}active{% endif %}" 
+                               href="{% url 'movimientos:listar' %}">
+                                Movimientos
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="sidebar-link {% if request.resolver_match.app_name == 'reportes' %}active{% endif %}" 
+                               href="{% url 'reportes:home' %}">
+                                <i class="bi bi-file-earmark-bar-graph"></i>
+                                Reportes
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item mt-3">
+                            <hr>
+                        </li>
+                        
+                        <!-- Solo para administradores -->
+                        {% if user.puede_aprobar %}
+                        <li class="nav-item">
+                            <a class="sidebar-link" href="{% url 'usuarios:gestionar_usuarios' %}">
+                                <i class="bi bi-people"></i>
+                                Gestionar Usuarios
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </nav>
+            
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- Mensajes del sistema -->
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Contenido para usuarios no autenticados -->
+    <div class="container">
+        {% if messages %}
+            <div class="row mt-3">
+                <div class="col-md-6 mx-auto">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+        
+        {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+    
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Auto-cerrar alertas después de 5 segundos
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert.alert-auto');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    
+   <!-- Script para modo oscuro -->
+<script>
+    // Cargar preferencia de modo oscuro
+    document.addEventListener('DOMContentLoaded', function() {
+        const modoOscuro = localStorage.getItem('modoOscuro') === 'true';
+        const checkboxPerfil = document.getElementById('id_modo_oscuro');
+        const checkboxNavbar = document.getElementById('modoOscuroToggle');
+        
+        // Aplicar modo oscuro si está guardado
+        if (modoOscuro) {
+            document.body.classList.add('modo-oscuro');
+            if (checkboxPerfil) checkboxPerfil.checked = true;
+            if (checkboxNavbar) checkboxNavbar.checked = true;
+        }
+        
+        // Función para toggle
+        function toggleModoOscuro(checked) {
+            if (checked) {
+                document.body.classList.add('modo-oscuro');
+                localStorage.setItem('modoOscuro', 'true');
+            } else {
+                document.body.classList.remove('modo-oscuro');
+                localStorage.setItem('modoOscuro', 'false');
+            }
+            
+            // Sincronizar ambos checkboxes
+            if (checkboxPerfil) checkboxPerfil.checked = checked;
+            if (checkboxNavbar) checkboxNavbar.checked = checked;
+        }
+        
+        // Listener para checkbox del perfil
+        if (checkboxPerfil) {
+            checkboxPerfil.addEventListener('change', function() {
+                toggleModoOscuro(this.checked);
+            });
+        }
+        
+        // Listener para checkbox del navbar
+        if (checkboxNavbar) {
+            checkboxNavbar.addEventListener('change', function() {
+                toggleModoOscuro(this.checked);
+            });
+        }
+    });
+</script>

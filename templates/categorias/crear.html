@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Nueva Categoría - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{% url 'categorias:listar' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+            <h1 class="h2 mb-1">Nueva Categoría</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card card-custom border-0">
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nombre *</label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Icono (Emoji)</label>
+                            <input type="text" name="icono" class="form-control" value="📦" 
+                                   placeholder="Ej: 🍴, 🔧, ✏️">
+                            <small class="text-muted">Copia un emoji desde tu teclado</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Color</label>
+                            <input type="color" name="color" class="form-control" value="#3B82F6">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="3"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-gradient w-100 py-3">
+                            <i class="bi bi-save me-2"></i>Crear Categoría
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

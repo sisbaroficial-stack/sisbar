@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">📊 Dashboard</h1>
+            <p class="text-muted">Bienvenido, <strong>{{ user.get_full_name }}</strong> - {{ user.get_rol_display }}</p>
+        </div>
+        <div class="col-auto">
+            <div class="text-end">
+                <small class="text-muted">Última actualización:</small><br>
+                <strong>{{ now|date:"d/m/Y H:i" }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjetas de estadísticas principales -->
+    <div class="row g-4 mb-4">
+        <!-- Total de Productos -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Total Productos</h6>
+                        <div class="rounded-circle p-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="bi bi-box-seam text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 fw-bold">{{ total_productos }}</h2>
+                    <small class="text-muted">
+                        <i class="bi bi-cash-stack me-1"></i>Valor: ${{ valor_total|floatformat:0 }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Productos Disponibles -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Disponibles</h6>
+                        <div class="rounded-circle p-3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <i class="bi bi-check-circle text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 fw-bold text-success">{{ productos_disponibles }}</h2>
+                    <small class="text-success">
+                        🟢 En stock óptimo
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Por Agotarse -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Por Agotarse</h6>
+                        <div class="rounded-circle p-3" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <i class="bi bi-exclamation-triangle text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 fw-bold text-warning">{{ productos_por_agotar }}</h2>
+                    <small class="text-warning">
+                        🟡 Requieren atención
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Agotados -->
+        <div class="col-md-6 col-lg-3">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="text-muted mb-0">Agotados</h6>
+                        <div class="rounded-circle p-3" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <i class="bi bi-x-circle text-white fs-4"></i>
+                        </div>
+                    </div>
+                    <h2 class="mb-0 fw-bold text-danger">{{ productos_agotados }}</h2>
+                    <small class="text-danger">
+                        🔴 Sin stock
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fila principal -->
+    <div class="row g-4 mb-4">
+        <!-- Accesos rápidos -->
+        <div class="col-lg-3">
+            <div class="card card-custom border-0">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">⚡ Accesos Rápidos</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if user.puede_gestionar_inventario %}
+                        <a href="{% url 'inventario:crear_producto' %}" class="btn btn-outline-primary btn-lg text-start">
+                            <i class="bi bi-plus-circle me-2"></i>
+                            Agregar Producto
+                        </a>
+                        
+                        <a href="{% url 'inventario:descontar_producto' %}" class="btn btn-outline-warning btn-lg text-start">
+                            <i class="bi bi-arrow-down-circle me-2"></i>
+                            Descontar Producto
+                        </a>
+                        {% endif %}
+                        
+                        <a href="{% url 'inventario:listar_productos' %}" class="btn btn-outline-info btn-lg text-start">
+                            <i class="bi bi-search me-2"></i>
+                            Ver Productos
+                        </a>
+                        
+                        <a href="{% url 'reportes:home' %}" class="btn btn-outline-success btn-lg text-start">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>
+                            Generar Reporte
+                        </a>
+                    </div>
+                    
+                    <hr class="my-3">
+                    
+                    <div class="text-center">
+                        <small class="text-muted">Movimientos hoy</small>
+                        <h3 class="mb-0 text-primary">{{ movimientos_hoy }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gráfica de productos por categoría -->
+        <div class="col-lg-5">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">📊 Productos por Categoría</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="categoriasChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Productos con stock bajo -->
+        <div class="col-lg-4">
+            <div class="card card-custom border-0 h-100">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">⚠️ Stock Bajo</h5>
+                </div>
+                <div class="card-body">
+                    {% if productos_stock_bajo %}
+                        <div class="list-group list-group-flush">
+                            {% for producto in productos_stock_bajo %}
+                            <a href="{% url 'inventario:ver_producto' producto.id %}" class="list-group-item list-group-item-action border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>{{ producto.nombre }}</strong>
+                                        <br><small class="text-muted">{{ producto.codigo }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ producto.get_estado_color }} fs-6">
+                                        {{ producto.cantidad }}
+                                    </span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-check-circle fs-1 d-block mb-2"></i>
+                            <p class="mb-0">Todo el stock está en buen nivel</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Últimas actividades y movimientos -->
+    <div class="row g-4 mb-4">
+        <!-- Últimos movimientos -->
+        <div class="col-lg-8">
+            <div class="card card-custom border-0">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">📋 Movimientos Recientes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Usuario</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if ultimos_movimientos %}
+                                    {% for mov in ultimos_movimientos %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-{% if mov.tipo == 'ENTRADA' %}success{% else %}danger{% endif %}">
+                                                {{ mov.get_tipo_icono }} {{ mov.get_tipo_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ mov.producto.nombre }}</strong>
+                                            <br><small class="text-muted">{{ mov.producto.codigo }}</small>
+                                        </td>
+                                        <td>
+                                            <strong class="{% if mov.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
+                                                {% if mov.tipo == 'ENTRADA' %}+{% else %}-{% endif %}{{ mov.cantidad }}
+                                            </strong>
+                                        </td>
+                                        <td>{{ mov.usuario.username }}</td>
+                                        <td>{{ mov.fecha|date:"d/m/Y H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            No hay movimientos recientes
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mi actividad reciente -->
+        <div class="col-lg-4">
+            <div class="card card-custom border-0">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">👤 Mi Actividad</h5>
+                </div>
+                <div class="card-body">
+                    {% if actividad_reciente %}
+                        <div class="timeline">
+                            {% for act in actividad_reciente %}
+                            <div class="mb-3">
+                                <span class="badge bg-primary mb-1">{{ act.get_tipo_display }}</span>
+                                <p class="mb-1 small">{{ act.descripcion }}</p>
+                                <small class="text-muted">{{ act.fecha|date:"d/m/Y H:i" }}</small>
+                                <hr>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+                            <p class="mb-0">No hay actividad registrada</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alertas -->
+    {% if alertas_pendientes %}
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="card card-custom border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-bell text-warning me-2"></i>
+                        Alertas de Inventario ({{ alertas_pendientes|length }})
+                    </h5>
+                    <div class="row">
+                        {% for alerta in alertas_pendientes %}
+                        <div class="col-md-6 mb-2">
+                            <div class="alert alert-{{ alerta.producto.get_estado_color }} mb-0">
+                                <strong>{{ alerta.producto.nombre }}</strong>
+                                <p class="mb-0 small">{{ alerta.mensaje }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Info del sistema -->
+    <div class="row">
+        <div class="col-15">
+            <div class="card card-custom border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="card-body text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="mb-2">🚀 SISBAR  - Sistema de Inventario</h4>
+                            <p class="mb-0">
+                                Sistema completo para la gestión de inventario empresarial.
+                                {% if stats_usuarios %}
+                                    <br>Usuarios: {{ stats_usuarios.activos }} activos de {{ stats_usuarios.total }} registrados
+                                    {% if stats_usuarios.pendientes > 0 %}
+                                        | <a href="{% url 'usuarios:gestionar_usuarios' %}" class="text-white"><u>{{ stats_usuarios.pendientes }} pendientes de aprobación</u></a>
+                                    {% endif %}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <span class="badge bg-white text-primary px-3 py-2 fs-6">
+                                Versión 1.0
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Gráfica de productos por categoría
+    const ctx = document.getElementById('categoriasChart');
+    
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ categorias_labels|safe }},
+                datasets: [{
+                    data: {{ categorias_data|safe }},
+                    backgroundColor: {{ categorias_colors|safe }},
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.parsed + ' productos';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

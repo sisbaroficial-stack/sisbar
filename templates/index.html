@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISBAR - Sistema de Inventario</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>');
+            background-size: cover;
+            background-position: bottom;
+        }
+        
+        /* Navbar */
+        .navbar-landing {
+            background: transparent;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-landing.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand-landing {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+        }
+        
+        .navbar-landing.scrolled .navbar-brand-landing {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-link-landing {
+            color: white;
+            font-weight: 500;
+            margin: 0 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-landing.scrolled .nav-link-landing {
+            color: #333;
+        }
+        
+        .nav-link-landing:hover {
+            color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-landing {
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-landing-primary {
+            background: white;
+            color: #667eea;
+            border: none;
+        }
+        
+        .btn-landing-primary:hover {
+            background: #f0f0f0;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-landing-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-landing-outline:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        /* Hero Content */
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            padding: 150px 0 100px;
+            color: white;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+        
+        .hero-buttons {
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 100px 0;
+            background: white;
+        }
+        
+        .feature-card {
+            padding: 40px 30px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        .feature-icon-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .feature-icon-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .feature-icon-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .feature-icon-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+        
+        .feature-icon-5 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .feature-icon-6 {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+            color: white;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .cta-subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 0 20px;
+        }
+        
+        .footer-links a {
+            color: #b8b8b8;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #667eea;
+        }
+        /* Modo oscuro para landing page */
+body.modo-oscuro-landing {
+    background: #0f0f1e;
+}
+
+body.modo-oscuro-landing .hero-section {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.modo-oscuro-landing .features-section {
+    background: #0f0f1e;
+}
+
+body.modo-oscuro-landing .feature-card {
+    background: #1a1a2e;
+    color: #e4e4e4;
+}
+
+body.modo-oscuro-landing .text-muted {
+    color: #b8b8b8 !important;
+}
+
+body.modo-oscuro-landing .lead {
+    color: #e4e4e4 !important;
+}
+
+body.modo-oscuro-landing .display-4 {
+    color: #e4e4e4;
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-landing fixed-top">
+        <div class="container">
+            <a class="navbar-brand-landing" href="#">
+                🛒 SISBAR
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: white;">
+                <span class="navbar-toggler-icon" style="filter: brightness(0) invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-landing" href="#inicio">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-landing" href="#caracteristicas">Características</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-landing" href="#contacto">Contacto</a>
+                    </li>
+                                
+                   <li class="nav-item me-3">
+                       <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="modoOscuroIndex" 
+                                   style="cursor: pointer; width: 3em; height: 1.5em;">
+                            <label class="form-check-label nav-link-landing ms-2" for="modoOscuroIndex" 
+                                   style="cursor: pointer;">
+                                 <i class="bi bi-moon-stars"></i>
+                            </label>
+                        </div>
+                    </li>
+         
+                                            
+                    <li class="nav-item ms-3">
+                        <a href="{% url 'usuarios:login' %}" class="btn btn-landing btn-landing-primary">
+                            Iniciar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Hero Section -->
+    <section class="hero-section" id="inicio">
+        <div class="container">
+            <div class="row align-items-center hero-content">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">
+                        Controla tu inventario sin complicaciones
+                    </h1>
+                    <p class="hero-subtitle">
+                        Sistema moderno y completo para la gestión de inventario empresarial. 
+                        Controla productos, categorías, proveedores y movimientos en tiempo real.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="{% url 'usuarios:registro' %}" class="btn btn-landing btn-landing-primary btn-lg me-3">
+                            <i class="bi bi-person-plus me-2"></i>Registrarme
+                        </a>
+                        <a href="{% url 'usuarios:login' %}" class="btn btn-landing btn-landing-outline btn-lg">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center d-none d-lg-block">
+                    <div style="font-size: 15rem; animation: float 3s ease-in-out infinite;">
+                        📦
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features Section -->
+    <section class="features-section" id="caracteristicas">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="display-4 fw-bold mb-3">✨ Características Principales</h2>
+                <p class="lead text-muted">Todo lo que necesitas para gestionar tu inventario</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-1">
+                            <i class="bi bi-box-seam"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Gestión Completa</h4>
+                        <p class="text-muted">
+                            Crea, edita y organiza productos con toda su información: 
+                            código, categoría, cantidad, precio y proveedor.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-2">
+                            <i class="bi bi-arrow-down-circle"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Descuento Inteligente</h4>
+                        <p class="text-muted">
+                            Descuenta productos rápidamente escaneando códigos de barras 
+                            o buscando por código. Búsqueda en tiempo real.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-3">
+                            <i class="bi bi-bell"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Alertas Automáticas</h4>
+                        <p class="text-muted">
+                            Recibe alertas cuando un producto se agota o está por agotarse. 
+                            Control visual con colores verde, amarillo y rojo.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-4">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Control por Roles</h4>
+                        <p class="text-muted">
+                            4 roles diferentes: Super Admin, Administrador, Empleado y Auditor. 
+                            Cada uno con permisos específicos.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-5">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Dashboard Completo</h4>
+                        <p class="text-muted">
+                            Visualiza estadísticas en tiempo real con gráficas interactivas. 
+                            Control total del estado de tu inventario.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-4">
+                    <div class="feature-card">
+                        <div class="feature-icon feature-icon-6">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Reportes Profesionales</h4>
+                        <p class="text-muted">
+                            Exporta reportes en Excel y PDF con formato profesional. 
+                            Historial completo de todos los movimientos.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section" id="contacto">
+        <div class="container">
+            <h2 class="cta-title">¿Listo para empezar?</h2>
+            <p class="cta-subtitle">
+                Regístrate ahora y comienza a gestionar tu inventario de forma profesional
+            </p>
+            <div>
+                <a href="{% url 'usuarios:registro' %}" class="btn btn-landing-primary btn-lg me-3">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Crear mi cuenta gratis
+                </a>
+                <a href="{% url 'usuarios:login' %}" class="btn btn-landing-outline btn-lg">
+                    Ya tengo cuenta
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <h5 class="mb-3">🛒 SISBAR </h5>
+                    <p class="text-muted">
+                        Sistema de Inventario Empresarial<br>
+                        Desarrollado con Django y Bootstrap 5
+                    </p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6 class="mb-3">Enlaces</h6>
+                    <div class="footer-links">
+                        <a href="{% url 'usuarios:login' %}" class="d-block mb-2">Iniciar Sesión</a>
+                        <a href="{% url 'usuarios:registro' %}" class="d-block mb-2">Registrarse</a>
+                        <a href="/admin/" class="d-block mb-2">Panel Admin</a>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6 class="mb-3">Contacto</h6>
+                    <p class="text-muted small">
+                        <i class="bi bi-envelope me-2"></i>sisbaroficial@gmail.com<br>
+                        <i class="bi bi-phone me-2"></i>+57 3216671038
+                    </p>
+                </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1);">
+            <div class="text-center text-muted">
+                <p class="mb-0">©  SISBAR - Sistema de Inventario Empresarial. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Efecto de scroll en navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-landing');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Animación flotante
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <script>
+    // Modo oscuro en index
+    document.addEventListener('DOMContentLoaded', function() {
+        const modoOscuro = localStorage.getItem('modoOscuro') === 'true';
+        const checkbox = document.getElementById('modoOscuroIndex');
+        
+        if (modoOscuro) {
+            document.body.classList.add('modo-oscuro-landing');
+            if (checkbox) checkbox.checked = true;
+        }
+        
+        if (checkbox) {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('modo-oscuro-landing');
+                    localStorage.setItem('modoOscuro', 'true');
+                } else {
+                    document.body.classList.remove('modo-oscuro-landing');
+                    localStorage.setItem('modoOscuro', 'false');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

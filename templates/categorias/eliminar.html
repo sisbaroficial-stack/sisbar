@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Categoría - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{% url 'categorias:listar' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+            <h1 class="h2 mb-1">⚠️ Eliminar Categoría</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card card-custom border-danger border-2">
+                <div class="card-body p-4">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Advertencia:</strong> Estás a punto de desactivar esta categoría.
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <div class="rounded-circle p-3 mx-auto mb-3" 
+                             style="background: {{ categoria.color }}; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center;">
+                            <span style="font-size: 3rem;">{{ categoria.icono }}</span>
+                        </div>
+                        <h4>{{ categoria.nombre }}</h4>
+                        <p class="text-muted">{{ categoria.total_productos }} productos</p>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-grow-1 py-3">
+                                <i class="bi bi-trash me-2"></i>Sí, Desactivar
+                            </button>
+                            <a href="{% url 'categorias:listar' %}" class="btn btn-outline-secondary py-3">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

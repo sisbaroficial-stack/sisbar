@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Usuarios - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">👥 Gestionar Usuarios</h1>
+            <p class="text-muted">Administra las cuentas de usuario del sistema</p>
+        </div>
+    </div>
+    
+    <!-- Estadísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card card-custom border-0">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Total Usuarios</h6>
+                    <h3 class="mb-0">{{ stats.total }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom border-0 border-start border-warning border-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Pendientes</h6>
+                    <h3 class="mb-0 text-warning">{{ stats.pendientes }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom border-0 border-start border-success border-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Aprobados</h6>
+                    <h3 class="mb-0 text-success">{{ stats.aprobados }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-custom border-0 border-start border-primary border-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-2">Activos</h6>
+                    <h3 class="mb-0 text-primary">{{ stats.activos }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtros y búsqueda -->
+    <div class="card card-custom border-0 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">Filtrar por estado</label>
+                    <select name="filtro" class="form-select" onchange="this.form.submit()">
+                        <option value="todos" {% if filtro == 'todos' %}selected{% endif %}>Todos</option>
+                        <option value="pendientes" {% if filtro == 'pendientes' %}selected{% endif %}>Pendientes de Aprobación</option>
+                        <option value="aprobados" {% if filtro == 'aprobados' %}selected{% endif %}>Aprobados</option>
+                        <option value="activos" {% if filtro == 'activos' %}selected{% endif %}>Activos</option>
+                        <option value="inactivos" {% if filtro == 'inactivos' %}selected{% endif %}>Inactivos</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Buscar usuario</label>
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Nombre, usuario, email, documento..." 
+                           value="{{ busqueda }}">
+                </div>
+                
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-2"></i>Buscar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Tabla de usuarios -->
+    <div class="card card-custom border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Información</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if usuarios %}
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                                            {{ usuario.first_name.0|upper }}{{ usuario.last_name.0|upper }}
+                                        </div>
+                                        <div>
+                                            <strong>{{ usuario.get_full_name }}</strong>
+                                            <br>
+                                            <small class="text-muted">@{{ usuario.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>
+                                        <i class="bi bi-envelope me-1"></i>{{ usuario.email }}<br>
+                                        {% if usuario.telefono %}
+                                            <i class="bi bi-phone me-1"></i>{{ usuario.telefono }}<br>
+                                        {% endif %}
+                                        {% if usuario.documento %}
+                                            <i class="bi bi-card-text me-1"></i>{{ usuario.documento }}
+                                        {% endif %}
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge badge-custom" 
+                                          style="background: {% if usuario.rol == 'SUPER_ADMIN' %}linear-gradient(135deg, #ef4444 0%, #dc2626 100%){% elif usuario.rol == 'ADMIN' %}linear-gradient(135deg, #f59e0b 0%, #d97706 100%){% elif usuario.rol == 'EMPLEADO' %}linear-gradient(135deg, #3b82f6 0%, #2563eb 100%){% else %}linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%){% endif %}; color: white;">
+                                        {{ usuario.get_rol_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if not usuario.aprobado %}
+                                        <span class="badge bg-warning">
+                                            <i class="bi bi-clock me-1"></i>Pendiente
+                                        </span>
+                                    {% elif usuario.is_active %}
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Activo
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small>{{ usuario.date_joined|date:"d/m/Y" }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if not usuario.aprobado %}
+                                            <a href="{% url 'usuarios:aprobar_usuario' usuario.id %}" 
+                                               class="btn btn-success" title="Aprobar usuario">
+                                                <i class="bi bi-check-lg"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        {% if usuario != user %}
+                                            <a href="{% url 'usuarios:toggle_usuario' usuario.id %}" 
+                                               class="btn btn-{% if usuario.is_active %}warning{% else %}info{% endif %}"
+                                               title="{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                                <i class="bi bi-{% if usuario.is_active %}dash-circle{% else %}check-circle{% endif %}"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <a href="{% url 'admin:usuarios_usuario_change' usuario.id %}" 
+                                           class="btn btn-primary" title="Ver detalles" target="_blank">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No se encontraron usuarios con los filtros aplicados
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

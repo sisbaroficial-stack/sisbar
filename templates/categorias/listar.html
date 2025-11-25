@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías - SISBAR {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">🏷️ Categorías y Subcategorías</h1>
+            <p class="text-muted">Gestiona las categorías de tus productos</p>
+        </div>
+        {% if user.puede_gestionar_inventario %}
+        <div class="col-auto">
+            <a href="{% url 'categorias:crear' %}" class="btn btn-gradient">
+                <i class="bi bi-plus-circle me-2"></i>Nueva Categoría
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="row g-4">
+        {% if categorias %}
+            {% for categoria in categorias %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card card-custom border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle p-3 me-3" 
+                                     style="background: {{ categoria.color }}; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
+                                    <span style="font-size: 2rem;">{{ categoria.icono }}</span>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0">{{ categoria.nombre }}</h5>
+                                    <small class="text-muted">{{ categoria.total_productos }} productos</small>
+                                </div>
+                            </div>
+                            {% if user.puede_gestionar_inventario %}
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'categorias:editar' categoria.id %}">
+                                            <i class="bi bi-pencil me-2"></i>Editar
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'categorias:crear_subcategoria' categoria.id %}">
+                                            <i class="bi bi-plus me-2"></i>Agregar Subcategoría
+                                        </a>
+                                    </li>
+                                    {% if user.puede_eliminar %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'categorias:eliminar' categoria.id %}">
+                                            <i class="bi bi-trash me-2"></i>Eliminar
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if categoria.descripcion %}
+                        <p class="text-muted small">{{ categoria.descripcion }}</p>
+                        {% endif %}
+                        
+                        <hr>
+                        
+                        <h6 class="mb-3">Subcategorías:</h6>
+                        {% if categoria.subcategorias.all %}
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for sub in categoria.subcategorias.all %}
+                                    <span class="badge bg-light text-dark">{{ sub.nombre }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">Sin subcategorías</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card card-custom border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-tags fs-1 text-muted d-block mb-3"></i>
+                        <h5>No hay categorías creadas</h5>
+                        <p class="text-muted">Comienza creando tu primera categoría</p>
+                        {% if user.puede_gestionar_inventario %}
+                        <a href="{% url 'categorias:crear' %}" class="btn btn-primary mt-3">
+                            <i class="bi bi-plus-circle me-2"></i>Crear Primera Categoría
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
