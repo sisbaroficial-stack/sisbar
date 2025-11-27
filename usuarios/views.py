@@ -1,9 +1,14 @@
+# ========== IMPORTS (TODO AL INICIO) ==========
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
+from django.views.decorators.http import require_POST
+from django.urls import reverse
+from django.http import HttpResponseRedirect
+
 from .models import Usuario, HistorialActividad
 from .forms import (
     RegistroUsuarioForm, 
@@ -13,8 +18,12 @@ from .forms import (
     AprobarUsuarioForm
 )
 from .emails import enviar_email_registro, enviar_email_aprobacion, enviar_email_alerta_admin
+from inventario.models import Producto
+from categorias.models import Categoria
+from proveedores.models import Proveedor
 
 
+# ========== FUNCIONES AUXILIARES ==========
 def get_client_ip(request):
     """Obtiene la IP del cliente"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -36,6 +45,12 @@ def registrar_actividad(usuario, tipo, descripcion, request=None):
     )
 
 
+def es_admin(user):
+    """Verifica si el usuario es administrador"""
+    return user.rol in ['SUPER_ADMIN', 'ADMIN']
+
+
+# ========== VISTAS DE AUTENTICACIÓN ==========
 def registro_view(request):
     """
     Vista de registro de nuevos usuarios
@@ -47,13 +62,11 @@ def registro_view(request):
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
-            # Crear usuario pero no aprobado
             usuario = form.save(commit=False)
             usuario.aprobado = False
-            usuario.is_active = True  # Activo pero no aprobado
+            usuario.is_active = True
             usuario.save()
             
-            # Registrar actividad
             registrar_actividad(
                 usuario, 
                 'CREAR', 
@@ -61,7 +74,6 @@ def registro_view(request):
                 request
             )
             
-            # Enviar correos
             enviar_email_registro(usuario)
             enviar_email_alerta_admin(usuario)
             
@@ -77,10 +89,7 @@ def registro_view(request):
 
 
 def login_view(request):
-    """
-    Vista de inicio de sesión
-    Verifica que el usuario esté aprobado
-    """
+    """Vista de inicio de sesión"""
     if request.user.is_authenticated:
         return redirect('dashboard:home')
     
@@ -90,7 +99,6 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             
-            # Registrar actividad
             registrar_actividad(
                 user,
                 'LOGIN',
@@ -100,7 +108,6 @@ def login_view(request):
             
             messages.success(request, f'¡Bienvenido, {user.first_name}!')
             
-            # Redirigir según el rol
             next_url = request.GET.get('next')
             if next_url:
                 return redirect(next_url)
@@ -114,7 +121,6 @@ def login_view(request):
 @login_required
 def logout_view(request):
     """Vista de cierre de sesión"""
-    # Registrar actividad antes de cerrar sesión
     registrar_actividad(
         request.user,
         'LOGOUT',
@@ -127,6 +133,7 @@ def logout_view(request):
     return redirect('index')
 
 
+# ========== VISTAS DE PERFIL ==========
 @login_required
 def perfil_view(request):
     """Vista del perfil del usuario"""
@@ -147,7 +154,6 @@ def perfil_view(request):
     else:
         form = PerfilUsuarioForm(instance=request.user)
     
-    # Obtener últimas actividades del usuario
     actividades = HistorialActividad.objects.filter(
         usuario=request.user
     ).order_by('-fecha')[:10]
@@ -183,25 +189,16 @@ def cambiar_password_view(request):
     return render(request, 'usuarios/cambiar_password.html', {'form': form})
 
 
-def es_admin(user):
-    """Verifica si el usuario es administrador"""
-    return user.rol in ['SUPER_ADMIN', 'ADMIN']
-
-
+# ========== GESTIÓN DE USUARIOS (ADMIN) ==========
 @login_required
 @user_passes_test(es_admin)
 def gestionar_usuarios_view(request):
-    """
-    Vista para que administradores gestionen usuarios
-    Solo accesible por SUPER_ADMIN y ADMIN
-    """
-    # Filtros
+    """Vista para que administradores gestionen usuarios"""
     filtro = request.GET.get('filtro', 'todos')
     busqueda = request.GET.get('q', '')
     
     usuarios = Usuario.objects.all()
     
-    # Aplicar filtros
     if filtro == 'pendientes':
         usuarios = usuarios.filter(aprobado=False)
     elif filtro == 'aprobados':
@@ -211,7 +208,6 @@ def gestionar_usuarios_view(request):
     elif filtro == 'inactivos':
         usuarios = usuarios.filter(is_active=False)
     
-    # Búsqueda
     if busqueda:
         usuarios = usuarios.filter(
             Q(username__icontains=busqueda) |
@@ -223,7 +219,6 @@ def gestionar_usuarios_view(request):
     
     usuarios = usuarios.order_by('-date_joined')
     
-    # Estadísticas
     stats = {
         'total': Usuario.objects.count(),
         'pendientes': Usuario.objects.filter(aprobado=False).count(),
@@ -243,9 +238,7 @@ def gestionar_usuarios_view(request):
 @login_required
 @user_passes_test(es_admin)
 def aprobar_usuario_view(request, usuario_id):
-    """
-    Vista para aprobar un usuario
-    """
+    """Vista para aprobar un usuario"""
     usuario = get_object_or_404(Usuario, id=usuario_id)
     
     if request.method == 'POST':
@@ -257,7 +250,6 @@ def aprobar_usuario_view(request, usuario_id):
                 usuario.aprobado_por = request.user
             usuario.save()
             
-            # Enviar correo de aprobación
             if usuario.aprobado:
                 enviar_email_aprobacion(usuario, request.user)
                 
@@ -289,12 +281,9 @@ def aprobar_usuario_view(request, usuario_id):
 @login_required
 @user_passes_test(es_admin)
 def toggle_usuario_view(request, usuario_id):
-    """
-    Activar/desactivar usuario
-    """
+    """Activar/desactivar usuario"""
     usuario = get_object_or_404(Usuario, id=usuario_id)
     
-    # No permitir que se desactive a sí mismo
     if usuario == request.user:
         messages.error(request, '❌ No puedes desactivar tu propia cuenta.')
         return redirect('usuarios:gestionar_usuarios')
@@ -318,10 +307,6 @@ def toggle_usuario_view(request, usuario_id):
     
     return redirect('usuarios:gestionar_usuarios')
 
-
-
-
-
 @login_required
 @user_passes_test(es_admin)
 def editar_usuario_completo_view(request, usuario_id):
@@ -333,10 +318,8 @@ def editar_usuario_completo_view(request, usuario_id):
         usuario_editar.email = request.POST.get('email')
         usuario_editar.telefono = request.POST.get('telefono', '').strip()
 
-        # Nuevo documento recibido
         nuevo_documento = request.POST.get('documento', '').strip()
 
-        # VALIDACIÓN: revisar si el documento ya existe en otro usuario
         if Usuario.objects.exclude(id=usuario_editar.id).filter(documento=nuevo_documento).exists():
             messages.error(request, "❌ Ya existe un usuario con ese número de documento.")
             return redirect('usuarios:editar_usuario_completo', usuario_id=usuario_editar.id)
@@ -422,22 +405,6 @@ def eliminar_usuario_view(request, usuario_id):
     })
 
 
-
-
-
-
-
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required, user_passes_test
-
-from usuarios.models import Usuario         # ← IMPORTANTE
-from inventario.models import Producto      # ← Modelo correcto
-
-
-def es_admin(user):
-    return user.rol in ["SUPER_ADMIN", "ADMIN"]
-
-
 @login_required
 @user_passes_test(es_admin)
 def detalle_usuario(request, usuario_id):
@@ -455,3 +422,215 @@ def detalle_usuario(request, usuario_id):
     }
 
     return render(request, "usuarios/detalle_usuario.html", context)
+
+
+# ========== PANEL DE ELIMINADOS ==========
+@login_required
+@user_passes_test(es_admin)
+def panel_eliminados_view(request):
+    """Página central para que los admins vean items eliminados (soft-deleted)"""
+    productos_inactivos = Producto.objects.filter(activo=False).order_by('-fecha_creacion')
+    productos_activos = Producto.objects.filter(activo=True).order_by('-fecha_creacion')[:8]
+
+    categorias_inactivas = Categoria.objects.filter(activa=False).order_by('-fecha_creacion')
+    categorias_activas = Categoria.objects.filter(activa=True).order_by('nombre')[:8]
+
+    proveedores_inactivos = Proveedor.objects.filter(activo=False).order_by('-fecha_registro')
+    proveedores_activos = Proveedor.objects.filter(activo=True).order_by('nombre')[:8]
+
+    usuarios_inactivos = Usuario.objects.filter(is_active=False).order_by('-date_joined')
+    usuarios_activos = Usuario.objects.filter(is_active=True).order_by('-date_joined')[:8]
+
+    context = {
+        'productos_inactivos': productos_inactivos,
+        'productos_activos_preview': productos_activos,
+        'categorias_inactivas': categorias_inactivas,
+        'categorias_activas_preview': categorias_activas,
+        'proveedores_inactivos': proveedores_inactivos,
+        'proveedores_activos_preview': proveedores_activos,
+        'usuarios_inactivos': usuarios_inactivos,
+        'usuarios_activos_preview': usuarios_activos,
+    }
+    return render(request, 'usuarios/panel_eliminados.html', context)
+
+
+# ========== RESTAURAR ==========
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def restaurar_producto(request, producto_id):
+    p = get_object_or_404(Producto, id=producto_id)
+    p.activo = True
+    p.save()
+    messages.success(request, f'Producto "{p.nombre}" restaurado.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def restaurar_categoria(request, categoria_id):
+    c = get_object_or_404(Categoria, id=categoria_id)
+    c.activa = True
+    c.save()
+    messages.success(request, f'Categoría "{c.nombre}" restaurada.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def restaurar_proveedor(request, proveedor_id):
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    prov.activo = True
+    prov.save()
+    messages.success(request, f'Proveedor "{prov.nombre}" restaurado.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def restaurar_usuario(request, usuario_id):
+    u = get_object_or_404(Usuario, id=usuario_id)
+    u.is_active = True
+    u.save()
+    messages.success(request, f'Usuario "{u.username}" restaurado (reactivado).')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+
+# ========== ELIMINAR DEFINITIVO ==========
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_producto_definitivo(request, producto_id):
+    p = get_object_or_404(Producto, id=producto_id)
+    nombre = str(p)
+    p.delete()
+    messages.success(request, f'Producto "{nombre}" eliminado permanentemente.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_categoria_definitivo(request, categoria_id):
+    c = get_object_or_404(Categoria, id=categoria_id)
+    nombre = str(c)
+    c.delete()
+    messages.success(request, f'Categoría "{nombre}" eliminada permanentemente.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_proveedor_definitivo(request, proveedor_id):
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    nombre = str(prov)
+    prov.delete()
+    messages.success(request, f'Proveedor "{nombre}" eliminado permanentemente.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_usuario_definitivo(request, usuario_id):
+    u = get_object_or_404(Usuario, id=usuario_id)
+    nombre = str(u)
+    u.delete()
+    messages.success(request, f'Usuario "{nombre}" eliminado permanentemente.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:panel_eliminados'))
+
+
+# ========== DESACTIVAR (SOFT DELETE) ==========
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def desactivar_producto(request, producto_id):
+    """Soft delete: marca producto como inactivo"""
+    p = get_object_or_404(Producto, id=producto_id)
+    p.activo = False
+    p.save()
+    
+    registrar_actividad(
+        request.user,
+        'ELIMINAR',
+        f'Desactivó el producto: {p.nombre} ({p.codigo})',
+        request
+    )
+    
+    messages.warning(request, f'Producto "{p.nombre}" movido a papelera.')
+    return redirect(request.META.get('HTTP_REFERER', 'inventario:lista_productos'))
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def desactivar_categoria(request, categoria_id):
+    """Soft delete: marca categoría como inactiva"""
+    c = get_object_or_404(Categoria, id=categoria_id)
+    
+    productos_asociados = Producto.objects.filter(categoria=c, activo=True).count()
+    if productos_asociados > 0:
+        messages.error(request, f'No se puede eliminar. La categoría "{c.nombre}" tiene {productos_asociados} productos activos.')
+        return redirect(request.META.get('HTTP_REFERER', 'categorias:lista'))
+    
+    c.activa = False
+    c.save()
+    
+    registrar_actividad(
+        request.user,
+        'ELIMINAR',
+        f'Desactivó la categoría: {c.nombre}',
+        request
+    )
+    
+    messages.warning(request, f'Categoría "{c.nombre}" movida a papelera.')
+    return redirect(request.META.get('HTTP_REFERER', 'categorias:lista'))
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def desactivar_proveedor(request, proveedor_id):
+    """Soft delete: marca proveedor como inactivo"""
+    prov = get_object_or_404(Proveedor, id=proveedor_id)
+    prov.activo = False
+    prov.save()
+    
+    registrar_actividad(
+        request.user,
+        'ELIMINAR',
+        f'Desactivó el proveedor: {prov.nombre} (NIT: {prov.nit})',
+        request
+    )
+    
+    messages.warning(request, f'Proveedor "{prov.nombre}" movido a papelera.')
+    return redirect(request.META.get('HTTP_REFERER', 'proveedores:lista'))
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def desactivar_usuario(request, usuario_id):
+    """Soft delete: marca usuario como inactivo"""
+    u = get_object_or_404(Usuario, id=usuario_id)
+    
+    if u == request.user:
+        messages.error(request, 'No puedes desactivar tu propia cuenta.')
+        return redirect(request.META.get('HTTP_REFERER', 'usuarios:gestionar_usuarios'))
+    
+    if u.rol == 'SUPER_ADMIN':
+        super_admins_activos = Usuario.objects.filter(rol='SUPER_ADMIN', is_active=True).count()
+        if super_admins_activos <= 1:
+            messages.error(request, 'No se puede desactivar el último Super Administrador.')
+            return redirect(request.META.get('HTTP_REFERER', 'usuarios:gestionar_usuarios'))
+    
+    u.is_active = False
+    u.save()
+    
+    registrar_actividad(
+        request.user,
+        'ELIMINAR',
+        f'Desactivó al usuario: {u.username} ({u.get_full_name()})',
+        request
+    )
+    
+    messages.warning(request, f'Usuario "{u.username}" desactivado.')
+    return redirect(request.META.get('HTTP_REFERER', 'usuarios:gestionar_usuarios'))
