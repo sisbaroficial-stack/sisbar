@@ -317,3 +317,106 @@ def toggle_usuario_view(request, usuario_id):
     )
     
     return redirect('usuarios:gestionar_usuarios')
+
+
+
+
+
+@login_required
+@user_passes_test(es_admin)
+def editar_usuario_completo_view(request, usuario_id):
+    usuario_editar = get_object_or_404(Usuario, id=usuario_id)
+
+    if request.method == 'POST':
+        usuario_editar.first_name = request.POST.get('first_name')
+        usuario_editar.last_name = request.POST.get('last_name')
+        usuario_editar.email = request.POST.get('email')
+        usuario_editar.telefono = request.POST.get('telefono', '').strip()
+
+        # Nuevo documento recibido
+        nuevo_documento = request.POST.get('documento', '').strip()
+
+        # VALIDACIÓN: revisar si el documento ya existe en otro usuario
+        if Usuario.objects.exclude(id=usuario_editar.id).filter(documento=nuevo_documento).exists():
+            messages.error(request, "❌ Ya existe un usuario con ese número de documento.")
+            return redirect('usuarios:editar_usuario_completo', usuario_id=usuario_editar.id)
+
+        usuario_editar.documento = nuevo_documento
+        usuario_editar.rol = request.POST.get('rol')
+        usuario_editar.is_active = request.POST.get('is_active') == 'on'
+
+        if not usuario_editar.aprobado and request.POST.get('aprobado') == 'on':
+            usuario_editar.aprobar_usuario(request.user)
+            enviar_email_aprobacion(usuario_editar, request.user)
+        else:
+            usuario_editar.aprobado = request.POST.get('aprobado') == 'on'
+
+        usuario_editar.save()
+
+        registrar_actividad(
+            request.user,
+            'EDITAR',
+            f'Editó el usuario {usuario_editar.username}',
+            request
+        )
+
+        messages.success(request, f'Usuario {usuario_editar.username} actualizado correctamente.')
+        return redirect('usuarios:gestionar_usuarios')
+
+    return render(request, 'usuarios/editar_usuario_completo.html', {
+        'usuario_editar': usuario_editar,
+    })
+
+
+@login_required
+@user_passes_test(es_admin)
+def resetear_password_view(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+
+    if request.method == 'POST':
+        nueva_password = request.POST.get('nueva_password', '').strip()
+        if nueva_password:
+            usuario.set_password(nueva_password)
+            usuario.save()
+
+            registrar_actividad(
+                request.user,
+                'EDITAR',
+                f'Reseteó la contraseña de {usuario.username}',
+                request
+            )
+
+            messages.success(request, f'Contraseña de {usuario.username} reseteada.')
+            return redirect('usuarios:gestionar_usuarios')
+
+    return render(request, 'usuarios/resetear_password.html', {
+        'usuario': usuario
+    })
+
+
+@login_required
+@user_passes_test(es_admin)
+def eliminar_usuario_view(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+
+    if usuario == request.user:
+        messages.error(request, 'No puedes eliminar tu propia cuenta.')
+        return redirect('usuarios:gestionar_usuarios')
+
+    if request.method == 'POST':
+        usuario.is_active = False
+        usuario.save()
+
+        registrar_actividad(
+            request.user,
+            'ELIMINAR',
+            f'Desactivó al usuario {usuario.username}',
+            request
+        )
+
+        messages.success(request, f'Usuario {usuario.username} desactivado.')
+        return redirect('usuarios:gestionar_usuarios')
+
+    return render(request, 'usuarios/eliminar_usuario.html', {
+        'usuario': usuario
+    })

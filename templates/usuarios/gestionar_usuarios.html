@@ -147,27 +147,37 @@
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
+
                                         {% if not usuario.aprobado %}
                                             <a href="{% url 'usuarios:aprobar_usuario' usuario.id %}" 
-                                               class="btn btn-success" title="Aprobar usuario">
+                                            class="btn btn-success" title="Aprobar usuario">
                                                 <i class="bi bi-check-lg"></i>
                                             </a>
                                         {% endif %}
-                                        
+
                                         {% if usuario != user %}
                                             <a href="{% url 'usuarios:toggle_usuario' usuario.id %}" 
-                                               class="btn btn-{% if usuario.is_active %}warning{% else %}info{% endif %}"
-                                               title="{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                            class="btn btn-{% if usuario.is_active %}warning{% else %}info{% endif %}"
+                                            title="{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}">
                                                 <i class="bi bi-{% if usuario.is_active %}dash-circle{% else %}check-circle{% endif %}"></i>
                                             </a>
                                         {% endif %}
-                                        
+
+                                        <!-- 🚀 BOTÓN NUEVO: EDITAR USUARIO -->
+                                        <a href="{% url 'usuarios:editar_usuario_completo' usuario.id %}" 
+                                        class="btn btn-primary" title="Editar usuario">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <!-- Ver detalles en admin -->
                                         <a href="{% url 'admin:usuarios_usuario_change' usuario.id %}" 
-                                           class="btn btn-primary" title="Ver detalles" target="_blank">
+                                        class="btn btn-secondary" title="Ver detalles" target="_blank">
                                             <i class="bi bi-eye"></i>
                                         </a>
+
                                     </div>
                                 </td>
+
                             </tr>
                             {% endfor %}
                         {% else %}

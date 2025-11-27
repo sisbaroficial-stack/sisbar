@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Usuario - SISBAR 2026{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{% url 'usuarios:gestionar_usuarios' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+            <h1 class="h2 mb-1">✏️ Editar Usuario</h1>
+            <p class="text-muted">Modificar información de {{ usuario_editar.username }}</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Información Personal -->
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">👤 Información Personal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Nombre *</label>
+                                <input type="text" name="first_name" class="form-control" 
+                                       value="{{ usuario_editar.first_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Apellido *</label>
+                                <input type="text" name="last_name" class="form-control" 
+                                       value="{{ usuario_editar.last_name }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Email *</label>
+                                <input type="email" name="email" class="form-control" 
+                                       value="{{ usuario_editar.email }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control" 
+                                       value="{{ usuario_editar.telefono }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Documento</label>
+                            <input type="text" name="documento" class="form-control" 
+                                   value="{{ usuario_editar.documento }}">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rol y Permisos -->
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">🔐 Rol y Permisos</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Rol del Usuario</label>
+                            <select name="rol" class="form-select">
+                                <option value="EMPLEADO" {% if usuario_editar.rol == 'EMPLEADO' %}selected{% endif %}>
+                                    👤 Empleado
+                                </option>
+                                <option value="ADMIN" {% if usuario_editar.rol == 'ADMIN' %}selected{% endif %}>
+                                    👨‍💼 Administrador
+                                </option>
+                                <option value="AUDITOR" {% if usuario_editar.rol == 'AUDITOR' %}selected{% endif %}>
+                                    👁️ Auditor/Contador
+                                </option>
+                                {% if user.rol == 'SUPER_ADMIN' %}
+                                <option value="SUPER_ADMIN" {% if usuario_editar.rol == 'SUPER_ADMIN' %}selected{% endif %}>
+                                    👑 Super Administrador
+                                </option>
+                                {% endif %}
+                            </select>
+                            <small class="text-muted">Define los permisos del usuario en el sistema</small>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>📝 Permisos por Rol:</strong>
+                            <ul class="mb-0 mt-2 small">
+                                <li><strong>Empleado:</strong> Crear y descontar productos</li>
+                                <li><strong>Administrador:</strong> Gestión completa + aprobar usuarios</li>
+                                <li><strong>Auditor:</strong> Solo visualización y reportes</li>
+                                <li><strong>Super Admin:</strong> Control total del sistema</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Estado de la Cuenta -->
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">⚙️ Estado de la Cuenta</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="aprobado" 
+                                       id="aprobado" {% if usuario_editar.aprobado %}checked{% endif %}>
+                                <label class="form-check-label" for="aprobado">
+                                    <strong>✅ Cuenta Aprobada</strong>
+                                </label>
+                            </div>
+                            <small class="text-muted">El usuario podrá iniciar sesión</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" 
+                                       id="is_active" {% if usuario_editar.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="is_active">
+                                    <strong>🟢 Cuenta Activa</strong>
+                                </label>
+                            </div>
+                            <small class="text-muted">Desactiva para bloquear el acceso temporal</small>
+                        </div>
+                        
+                        {% if usuario_editar.aprobado %}
+                        <div class="alert alert-success">
+                            <small>
+                                <strong>Aprobado por:</strong> {{ usuario_editar.aprobado_por.get_full_name }}<br>
+                                <strong>Fecha:</strong> {{ usuario_editar.fecha_aprobacion|date:"d/m/Y H:i" }}
+                            </small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Información del Sistema -->
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-header bg-transparent border-0 pt-4">
+                        <h5 class="mb-0">📊 Información del Sistema</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Usuario:</strong><br>
+                                    {{ usuario_editar.username }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Fecha de Registro:</strong><br>
+                                    {{ usuario_editar.date_joined|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2">
+                                    <strong>Último Acceso:</strong><br>
+                                    {{ usuario_editar.last_login|date:"d/m/Y H:i"|default:"Nunca" }}
+                                </p>
+                                <p class="mb-2">
+                                    <strong>Última Actividad:</strong><br>
+                                    {{ usuario_editar.ultima_actividad|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de Acción -->
+                <div class="card card-custom border-0 mb-4">
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-gradient w-100 py-3">
+                                    <i class="bi bi-save me-2"></i>
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="{% url 'usuarios:gestionar_usuarios' %}" 
+                                   class="btn btn-outline-secondary w-100 py-3">
+                                    <i class="bi bi-x-circle me-2"></i>
+                                    Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Acciones Adicionales -->
+            <div class="card card-custom border-0 border-warning mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="mb-0">⚠️ Acciones Adicionales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'usuarios:resetear_password' usuario_editar.id %}" 
+                           class="btn btn-warning">
+                            <i class="bi bi-key me-2"></i>
+                            Resetear Contraseña
+                        </a>
+                        
+                        {% if usuario_editar != user %}
+                        <a href="{% url 'usuarios:eliminar_usuario' usuario_editar.id %}" 
+                           class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>
+                            Desactivar Usuario
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

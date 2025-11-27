@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Usuario - SISBAR 2026{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <a href="{% url 'usuarios:gestionar_usuarios' %}" class="btn btn-outline-secondary mb-3">
+                <i class="bi bi-arrow-left me-2"></i>Volver
+            </a>
+            <h1 class="h2 mb-1">⚠️ Desactivar Usuario</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card card-custom border-danger border-2">
+                <div class="card-body p-4">
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>Advertencia:</strong> Estás a punto de desactivar este usuario.
+                    </div>
+                    
+                    <div class="text-center mb-4">
+                        <div class="user-avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 3rem;">
+                            {{ usuario.first_name.0|upper }}{{ usuario.last_name.0|upper }}
+                        </div>
+                        <h4>{{ usuario.get_full_name }}</h4>
+                        <p class="text-muted">@{{ usuario.username }}</p>
+                        <span class="badge bg-primary">{{ usuario.get_rol_display }}</span>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Nota:</strong> El usuario será desactivado pero no se eliminará permanentemente. 
+                            Podrás reactivarlo desde la gestión de usuarios si es necesario.
+                        </small>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-danger flex-grow-1 py-3">
+                                <i class="bi bi-trash me-2"></i>
+                                Sí, Desactivar Usuario
+                            </button>
+                            <a href="{% url 'usuarios:gestionar_usuarios' %}" 
+                               class="btn btn-outline-secondary py-3">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

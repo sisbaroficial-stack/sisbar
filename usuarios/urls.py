@@ -17,4 +17,14 @@ urlpatterns = [
     path('gestionar/', views.gestionar_usuarios_view, name='gestionar_usuarios'),
     path('aprobar/<int:usuario_id>/', views.aprobar_usuario_view, name='aprobar_usuario'),
     path('toggle/<int:usuario_id>/', views.toggle_usuario_view, name='toggle_usuario'),
+
+
+
+
+
+
+    # Gestión avanzada de usuarios (solo admins)
+    path('editar-completo/<int:usuario_id>/', views.editar_usuario_completo_view, name='editar_usuario_completo'),
+    path('resetear-password/<int:usuario_id>/', views.resetear_password_view, name='resetear_password'),
+    path('eliminar-usuario/<int:usuario_id>/', views.eliminar_usuario_view, name='eliminar_usuario'),
 ]
