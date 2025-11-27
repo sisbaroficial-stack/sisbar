@@ -62,17 +62,23 @@ def registro_view(request):
     if request.method == 'POST':
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
+
             usuario = form.save(commit=False)
             usuario.aprobado = False
             usuario.is_active = True
             usuario.save()
             
+
+
             registrar_actividad(
                 usuario, 
                 'CREAR', 
                 f'Usuario {usuario.username} se registró en el sistema',
                 request
             )
+
+
+        
             
             enviar_email_registro(usuario)
             enviar_email_alerta_admin(usuario)
@@ -98,6 +104,8 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
+
+
             
             registrar_actividad(
                 user,
@@ -107,6 +115,8 @@ def login_view(request):
             )
             
             messages.success(request, f'¡Bienvenido, {user.first_name}!')
+
+
             
             next_url = request.GET.get('next')
             if next_url:
@@ -121,13 +131,16 @@ def login_view(request):
 @login_required
 def logout_view(request):
     """Vista de cierre de sesión"""
+
+
+
     registrar_actividad(
         request.user,
         'LOGOUT',
         f'{request.user.username} cerró sesión',
         request
     )
-    
+
     logout(request)
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('index')
@@ -154,6 +167,7 @@ def perfil_view(request):
     else:
         form = PerfilUsuarioForm(instance=request.user)
     
+
     actividades = HistorialActividad.objects.filter(
         usuario=request.user
     ).order_by('-fecha')[:10]
@@ -199,6 +213,8 @@ def gestionar_usuarios_view(request):
     
     usuarios = Usuario.objects.all()
     
+
+
     if filtro == 'pendientes':
         usuarios = usuarios.filter(aprobado=False)
     elif filtro == 'aprobados':
@@ -208,6 +224,9 @@ def gestionar_usuarios_view(request):
     elif filtro == 'inactivos':
         usuarios = usuarios.filter(is_active=False)
     
+
+
+
     if busqueda:
         usuarios = usuarios.filter(
             Q(username__icontains=busqueda) |
@@ -219,6 +238,8 @@ def gestionar_usuarios_view(request):
     
     usuarios = usuarios.order_by('-date_joined')
     
+
+
     stats = {
         'total': Usuario.objects.count(),
         'pendientes': Usuario.objects.filter(aprobado=False).count(),
@@ -250,6 +271,8 @@ def aprobar_usuario_view(request, usuario_id):
                 usuario.aprobado_por = request.user
             usuario.save()
             
+
+
             if usuario.aprobado:
                 enviar_email_aprobacion(usuario, request.user)
                 
@@ -284,6 +307,8 @@ def toggle_usuario_view(request, usuario_id):
     """Activar/desactivar usuario"""
     usuario = get_object_or_404(Usuario, id=usuario_id)
     
+
+
     if usuario == request.user:
         messages.error(request, '❌ No puedes desactivar tu propia cuenta.')
         return redirect('usuarios:gestionar_usuarios')
@@ -307,6 +332,10 @@ def toggle_usuario_view(request, usuario_id):
     
     return redirect('usuarios:gestionar_usuarios')
 
+
+
+
+
 @login_required
 @user_passes_test(es_admin)
 def editar_usuario_completo_view(request, usuario_id):
@@ -318,7 +347,10 @@ def editar_usuario_completo_view(request, usuario_id):
         usuario_editar.email = request.POST.get('email')
         usuario_editar.telefono = request.POST.get('telefono', '').strip()
 
+
+
         nuevo_documento = request.POST.get('documento', '').strip()
+
 
         if Usuario.objects.exclude(id=usuario_editar.id).filter(documento=nuevo_documento).exists():
             messages.error(request, "❌ Ya existe un usuario con ese número de documento.")
@@ -405,7 +437,12 @@ def eliminar_usuario_view(request, usuario_id):
     })
 
 
+
 @login_required
+
+
+
+
 @user_passes_test(es_admin)
 def detalle_usuario(request, usuario_id):
     usuario = get_object_or_404(Usuario, id=usuario_id)
