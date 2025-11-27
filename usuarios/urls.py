@@ -20,6 +20,17 @@ urlpatterns = [
 
 
 
+ path("detalle/<int:usuario_id>/", views.detalle_usuario, name="detalle_usuario"),
+
+
+
+
+   
+
+
+
+
+
 
 
 

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalles de Usuario{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <h2 class="mb-3">👤 Detalles del Usuario</h2>
+
+    <!-- Información Básica -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>{{ usuario_detalle.get_full_name }}</h4>
+            <p><strong>Usuario:</strong> @{{ usuario_detalle.username }}</p>
+            <p><strong>Email:</strong> {{ usuario_detalle.email }}</p>
+            <p><strong>Rol:</strong> {{ usuario_detalle.get_rol_display }}</p>
+            <p><strong>Estado:</strong> 
+                {% if usuario_detalle.is_active %}
+                    <span class="badge bg-success">Activo</span>
+                {% else %}
+                    <span class="badge bg-secondary">Inactivo</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Productos Creados -->
+    <h3>📦 Productos del usuario</h3>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5>Activos ({{ productos_activos.count }})</h5>
+            <ul>
+                {% for p in productos_activos %}
+                    <li>{{ p.nombre }} — {{ p.precio }}</li>
+                {% empty %}
+                    <p class="text-muted">No tiene productos activos</p>
+                {% endfor %}
+            </ul>
+
+            <h5 class="mt-4">Inactivos / Eliminados ({{ productos_inactivos.count }})</h5>
+            <ul>
+                {% for p in productos_inactivos %}
+                    <li class="text-danger">{{ p.nombre }} — (Desactivado)</li>
+                {% empty %}
+                    <p class="text-muted">No tiene productos inactivos</p>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

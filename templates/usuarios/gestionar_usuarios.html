@@ -170,10 +170,12 @@
                                         </a>
 
                                         <!-- Ver detalles en admin -->
-                                        <a href="{% url 'admin:usuarios_usuario_change' usuario.id %}" 
-                                        class="btn btn-secondary" title="Ver detalles" target="_blank">
+                                        <!-- 👁️ NUEVO BOTÓN: VER DETALLES PERSONALIZADO -->
+                                        <a href="{% url 'usuarios:detalle_usuario' usuario.id %}"
+                                        class="btn btn-info" title="Ver detalles">
                                             <i class="bi bi-eye"></i>
                                         </a>
+
 
                                     </div>
                                 </td>

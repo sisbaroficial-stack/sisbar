@@ -420,3 +420,38 @@ def eliminar_usuario_view(request, usuario_id):
     return render(request, 'usuarios/eliminar_usuario.html', {
         'usuario': usuario
     })
+
+
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+from usuarios.models import Usuario         # ← IMPORTANTE
+from inventario.models import Producto      # ← Modelo correcto
+
+
+def es_admin(user):
+    return user.rol in ["SUPER_ADMIN", "ADMIN"]
+
+
+@login_required
+@user_passes_test(es_admin)
+def detalle_usuario(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+
+    productos = Producto.objects.filter(creado_por=usuario)
+    productos_activos = productos.filter(activo=True)
+    productos_inactivos = productos.filter(activo=False)
+
+    context = {
+        "usuario_detalle": usuario,
+        "productos": productos,
+        "productos_activos": productos_activos,
+        "productos_inactivos": productos_inactivos,
+    }
+
+    return render(request, "usuarios/detalle_usuario.html", context)
