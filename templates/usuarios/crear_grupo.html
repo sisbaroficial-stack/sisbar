@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Crear Grupo - SISBAR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">➕ Crear Nuevo Grupo</h1>
+            <p class="text-muted">Define un grupo y asigna permisos</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'usuarios:gestionar_grupos' %}" class="btn btn-outline-secondary">
+                ← Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Información del Grupo</h5>
+                    <form method="post" id="formGrupo">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nombre del Grupo *</label>
+                            <input type="text" name="nombre" class="form-control" required
+                                   placeholder="Ej: Gerentes, Vendedores, Auditores...">
+                            <small class="text-muted">Usa un nombre descriptivo y claro</small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-lightbulb me-1"></i>
+                                <strong>Tip:</strong> Selecciona los permisos que necesita este grupo en la sección de la derecha →
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✓ Crear Grupo
+                            </button>
+                            <a href="{% url 'usuarios:gestionar_grupos' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">🔐 Permisos Disponibles</h5>
+                    
+                    <div class="mb-3">
+                        <input type="text" id="buscarPermiso" class="form-control" 
+                               placeholder="🔍 Buscar permiso...">
+                    </div>
+
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        {% for app, modelos in permisos_organizados.items %}
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted mb-3">
+                                <i class="bi bi-folder me-2"></i>{{ app }}
+                            </h6>
+                            
+                            {% for modelo, permisos in modelos.items %}
+                            <div class="card mb-2">
+                                <div class="card-header bg-light">
+                                    <strong>{{ modelo|title }}</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for permiso in permisos %}
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="permisos" value="{{ permiso.id }}" 
+                                                       id="permiso_{{ permiso.id }}"
+                                                       form="formGrupo">
+                                                <label class="form-check-label" for="permiso_{{ permiso.id }}">
+                                                    {{ permiso.name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Búsqueda de permisos en tiempo real
+document.getElementById('buscarPermiso').addEventListener('keyup', function() {
+    const busqueda = this.value.toLowerCase();
+    const checks = document.querySelectorAll('.form-check');
+    
+    checks.forEach(check => {
+        const texto = check.textContent.toLowerCase();
+        if (texto.includes(busqueda)) {
+            check.style.display = '';
+        } else {
+            check.style.display = 'none';
+        }
+    });
+});
+</script>
+{% endblock %}

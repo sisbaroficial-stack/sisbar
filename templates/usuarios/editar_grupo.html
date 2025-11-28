@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Grupo - SISBAR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">✏️ Editar Grupo: {{ grupo.name }}</h1>
+            <p class="text-muted">Modifica el nombre y permisos del grupo</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'usuarios:gestionar_grupos' %}" class="btn btn-outline-secondary">
+                ← Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">📋 Información del Grupo</h5>
+                    <form method="post" id="formGrupo">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nombre del Grupo *</label>
+                            <input type="text" name="nombre" class="form-control" required
+                                   value="{{ grupo.name }}">
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <small>
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>Usuarios afectados:</strong> {{ grupo.user_set.count }}
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ✓ Guardar Cambios
+                            </button>
+                            <a href="{% url 'usuarios:gestionar_grupos' %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Usuarios en el grupo -->
+                <div class="card-body border-top">
+                    <h6 class="mb-3">👥 Usuarios en este grupo ({{ grupo.user_set.count }})</h6>
+                    {% if grupo.user_set.all %}
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        {% for usuario in grupo.user_set.all %}
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="user-avatar me-2" style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                {{ usuario.first_name.0 }}{{ usuario.last_name.0 }}
+                            </div>
+                            <small>{{ usuario.get_full_name }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <small class="text-muted">No hay usuarios en este grupo</small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="card-title mb-0">🔐 Permisos del Grupo</h5>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="seleccionarTodos()">
+                                ☑️ Todos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deseleccionarTodos()">
+                                ☐ Ninguno
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <input type="text" id="buscarPermiso" class="form-control" 
+                               placeholder="🔍 Buscar permiso...">
+                    </div>
+
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        {% for app, modelos in permisos_organizados.items %}
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted mb-3">
+                                <i class="bi bi-folder me-2"></i>{{ app }}
+                            </h6>
+                            
+                            {% for modelo, permisos in modelos.items %}
+                            <div class="card mb-2">
+                                <div class="card-header bg-light">
+                                    <strong>{{ modelo|title }}</strong>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        {% for permiso in permisos %}
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="permisos" value="{{ permiso.id }}" 
+                                                       id="permiso_{{ permiso.id }}"
+                                                       form="formGrupo"
+                                                       {% if permiso.id in permisos_grupo %}checked{% endif %}>
+                                                <label class="form-check-label" for="permiso_{{ permiso.id }}">
+                                                    {{ permiso.name }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Búsqueda de permisos
+document.getElementById('buscarPermiso').addEventListener('keyup', function() {
+    const busqueda = this.value.toLowerCase();
+    const checks = document.querySelectorAll('.form-check');
+    
+    checks.forEach(check => {
+        const texto = check.textContent.toLowerCase();
+        check.style.display = texto.includes(busqueda) ? '' : 'none';
+    });
+});
+
+// Seleccionar todos
+function seleccionarTodos() {
+    document.querySelectorAll('input[name="permisos"]').forEach(cb => cb.checked = true);
+}
+
+// Deseleccionar todos
+function deseleccionarTodos() {
+    document.querySelectorAll('input[name="permisos"]').forEach(cb => cb.checked = false);
+}
+</script>
+{% endblock %}

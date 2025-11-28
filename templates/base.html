@@ -272,8 +272,111 @@
         body.modo-oscuro .form-select::placeholder {
             color: #b8b8b8 !important;
         }
+        /*  Arregla el color del nombre del usuario en modo oscuro */
+        body.modo-oscuro .navbar-custom .nav-link,
+        body.modo-oscuro .navbar-custom .navbar-text,
+        body.modo-oscuro .user-name,
+        body.modo-oscuro .dropdown-toggle {
+            color: #ffffff !important;
+        }
 
+        /*  Si el fondo del dropdown queda muy oscuro */
+        body.modo-oscuro .dropdown-menu {
+            background-color: #16213e !important;
+            color: #ffffff !important;
+        }
 
+        body.modo-oscuro .dropdown-item {
+            color: #ffffff !important;
+        }
+
+        body.modo-oscuro .dropdown-item:hover {
+            background-color: #667eea !important;
+            color: #ffffff !important;
+        }
+        /*  Fondo donde están las tarjetas, tablas o contenedores de productos */
+        body.modo-oscuro .card,
+        body.modo-oscuro .card-body,
+        body.modo-oscuro .table-responsive,
+        body.modo-oscuro .container,
+        body.modo-oscuro .content-wrapper,
+        body.modo-oscuro .section {
+            background-color: #1a1a2e !important;
+            color: #e4e4e4 !important;
+        }
+
+        /*  Tablas internas */
+        body.modo-oscuro .table td,
+        body.modo-oscuro .table th {
+            background-color: #1a1a2e !important;
+            color: #e4e4e4 !important;
+        }
+
+        /*  Bordes de tabla */
+        body.modo-oscuro .table-bordered td,
+        body.modo-oscuro .table-bordered th {
+            border-color: #333 !important;
+        }
+
+        /*  Si usas cards normales de Bootstrap */
+        body.modo-oscuro .card-header {
+            background-color: #16213e !important;
+            color: #ffffff !important;
+        }
+
+    /* FIX PARA TARJETAS DEL DASHBOARD (STOCK BAJO, TOTAL PRODUCTOS, etc.)
+    
+
+    .dashboard-card {
+        background: white;
+        color: #1f2937;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .dashboard-card h4 {
+        font-weight: 700;
+    }
+
+    .dashboard-card .numero {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #667eea;
+    }
+
+    /* ------ MODO OSCURO ------ */
+    body.modo-oscuro .dashboard-card {
+        background: #1a1a2e;
+        color: #e4e4e4;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    body.modo-oscuro .card-custom {
+        background: #1a1a2e !important;
+        color: #e4e4e4 !important;
+    }
+
+    body.modo-oscuro .card-header {
+        background: #16213e !important;
+        color: #ffffff !important;
+    }
+
+    body.modo-oscuro .dashboard-card .numero {
+        color: #a78bfa;  /* Un lila bonito */
+    }
+    /* Forzar modo oscuro en listas dentro de tarjetas */
+    body.modo-oscuro .list-group-item {
+        background-color: #1a1a2e !important;
+        color: #ffffff !important;
+        border-color: #0f0f1a !important;
+    }
+
+    /* Hover oscuro */
+    body.modo-oscuro .list-group-item-action:hover {
+        background-color: #232347 !important;
+        color: #ffffff !important;
+    }
 
 
 
@@ -371,7 +474,7 @@
                             </a>
                         </li>
                         {% endif %}
-                        
+                        {% if user.puede_aprobar %}
                         <li class="nav-item">
                                 <a class="sidebar-link {% if request.resolver_match.app_name == 'categorias' %}active{% endif %}" 
                                    href="{% url 'categorias:listar' %}">
@@ -379,7 +482,7 @@
                                 Categorías
                             </a>
                         </li>
-                        {% if user.puede_aprobar %}
+                        
                         <li class="nav-item">
                             <a class="sidebar-link {% if request.resolver_match.app_name == 'proveedores' %}active{% endif %}" 
                                href="{% url 'proveedores:listar' %}">
@@ -388,14 +491,16 @@
                             </a>
                         </li>
                         {% endif %}
-
+                        
                         <li class="nav-item">
                             <a class="sidebar-link {% if request.resolver_match.app_name == 'movimientos' %}active{% endif %}" 
                                href="{% url 'movimientos:listar' %}">
+                               <i class="bi bi-arrow-left-right"></i>
                                 Movimientos
                             </a>
                         </li>
                         
+                        {% if user.puede_aprobar %}
                         <li class="nav-item">
                             <a class="sidebar-link {% if request.resolver_match.app_name == 'reportes' %}active{% endif %}" 
                                href="{% url 'reportes:home' %}">
@@ -403,6 +508,8 @@
                                 Reportes
                             </a>
                         </li>
+                        {% endif %}
+
                         
                         <li class="nav-item mt-3">
                             <hr>

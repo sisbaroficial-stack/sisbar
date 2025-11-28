@@ -371,3 +371,93 @@ def enviar_email_alerta_admin(usuario):
     except Exception as e:
         print(f"Error al enviar correo a administradores: {e}")
         return False
+    
+
+def enviar_email_cambio_password(usuario):
+    asunto = '🔐 Contraseña Cambiada - SISBAR'
+
+    mensaje_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                max-width: 600px;
+                margin: 40px auto;
+                background-color: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }}
+            .header {{
+                background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+            }}
+            .content {{
+                padding: 40px 30px;
+                color: #333;
+            }}
+            .info-box {{
+                background-color: #eff6ff;
+                border-left: 4px solid #3b82f6;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 5px;
+            }}
+            .footer {{
+                background-color: #f8f9fa;
+                padding: 20px;
+                text-align: center;
+                color: #666;
+                font-size: 14px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🔐 Contraseña Actualizada</h1>
+            </div>
+            
+            <div class="content">
+                <h2>Hola {usuario.first_name},</h2>
+
+                <p>Tu contraseña fue cambiada correctamente.</p>
+
+                <div class="info-box">
+                    <strong>🕒 Fecha del cambio:</strong><br>
+                    El cambio fue realizado desde tu cuenta.<br><br>
+
+                    Si <strong>tú no realizaste este cambio</strong>, contacta al administrador inmediatamente.
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Este es un correo automático, por favor no responder.</p>
+                <p><strong>SISBAR</strong> - Sistema de Inventario</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    mensaje_texto = strip_tags(mensaje_html)
+
+    email = EmailMultiAlternatives(
+        asunto,
+        mensaje_texto,
+        settings.DEFAULT_FROM_EMAIL,
+        [usuario.email]
+    )
+    email.attach_alternative(mensaje_html, "text/html")
+    email.send()
+
+    

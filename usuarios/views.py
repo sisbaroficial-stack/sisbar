@@ -9,6 +9,16 @@ from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import Group, Permission
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
 from .models import Usuario, HistorialActividad
 from .forms import (
     RegistroUsuarioForm, 
@@ -188,18 +198,32 @@ def cambiar_password_view(request):
             user = form.save()
             update_session_auth_hash(request, user)
             
+
+
+            # 🔔 Enviar correo notificando el cambio de contraseña
+            send_mail(
+                'Cambio de contraseña en SISBAR',
+                f'Hola {user.username},\n\n'
+                'Tu contraseña fue cambiada correctamente.\n'
+                'Si no realizaste este cambio, por favor contacta al administrador inmediatamente.',
+                settings.DEFAULT_FROM_EMAIL,  # Remitente configurado
+                [user.email],  # Destinatario
+                fail_silently=False,
+            )
+
+            # Registrar actividad
             registrar_actividad(
                 request.user,
                 'EDITAR',
                 'Usuario cambió su contraseña',
                 request
             )
-            
+
             messages.success(request, '✅ Contraseña cambiada exitosamente.')
             return redirect('usuarios:perfil')
     else:
         form = CambiarPasswordForm(request.user)
-    
+
     return render(request, 'usuarios/cambiar_password.html', {'form': form})
 
 
@@ -346,11 +370,10 @@ def editar_usuario_completo_view(request, usuario_id):
         usuario_editar.last_name = request.POST.get('last_name')
         usuario_editar.email = request.POST.get('email')
         usuario_editar.telefono = request.POST.get('telefono', '').strip()
-
+        
 
 
         nuevo_documento = request.POST.get('documento', '').strip()
-
 
         if Usuario.objects.exclude(id=usuario_editar.id).filter(documento=nuevo_documento).exists():
             messages.error(request, "❌ Ya existe un usuario con ese número de documento.")
@@ -366,6 +389,10 @@ def editar_usuario_completo_view(request, usuario_id):
         else:
             usuario_editar.aprobado = request.POST.get('aprobado') == 'on'
 
+        # ⭐ NUEVO: Asignar grupos
+        grupos_ids = request.POST.getlist('grupos')
+        usuario_editar.groups.set(grupos_ids)
+
         usuario_editar.save()
 
         registrar_actividad(
@@ -378,9 +405,155 @@ def editar_usuario_completo_view(request, usuario_id):
         messages.success(request, f'Usuario {usuario_editar.username} actualizado correctamente.')
         return redirect('usuarios:gestionar_usuarios')
 
+    # NUEVO: Obtener grupos para el template
+    grupos_disponibles = Group.objects.all()
+    grupos_usuario = list(usuario_editar.groups.values_list('id', flat=True))
+
     return render(request, 'usuarios/editar_usuario_completo.html', {
         'usuario_editar': usuario_editar,
+        'grupos_disponibles': grupos_disponibles,
+        'grupos_usuario': grupos_usuario,
     })
+@login_required
+@user_passes_test(es_admin)
+def gestionar_grupos_view(request):
+    """Vista para gestionar grupos de usuarios"""
+    grupos = Group.objects.all().prefetch_related('permissions')
+    
+    context = {
+        'grupos': grupos
+    }
+    return render(request, 'usuarios/gestionar_grupos.html', context)
+
+
+@login_required
+@user_passes_test(es_admin)
+def crear_grupo_view(request):
+    """Crear nuevo grupo"""
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        permisos_ids = request.POST.getlist('permisos')
+        
+        if nombre:
+            grupo = Group.objects.create(name=nombre)
+            grupo.permissions.set(permisos_ids)
+            grupo.save()
+            
+            registrar_actividad(
+                request.user,
+                'CREAR',
+                f'Creó el grupo: {nombre}',
+                request
+            )
+            
+            messages.success(request, f'Grupo "{nombre}" creado correctamente.')
+            return redirect('usuarios:gestionar_grupos')
+    
+    # Obtener todos los permisos disponibles organizados por modelo
+    permisos = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'content_type__model')
+    
+    # Organizar permisos por app y modelo
+    permisos_organizados = {}
+    for permiso in permisos:
+        app = permiso.content_type.app_label
+        modelo = permiso.content_type.model
+        
+        if app not in permisos_organizados:
+            permisos_organizados[app] = {}
+        
+        if modelo not in permisos_organizados[app]:
+            permisos_organizados[app][modelo] = []
+        
+        permisos_organizados[app][modelo].append(permiso)
+    
+    context = {
+        'permisos_organizados': permisos_organizados
+    }
+    return render(request, 'usuarios/crear_grupo.html', context)
+
+
+@login_required
+@user_passes_test(es_admin)
+def editar_grupo_view(request, grupo_id):
+    """Editar grupo existente"""
+    grupo = get_object_or_404(Group, id=grupo_id)
+    
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        permisos_ids = request.POST.getlist('permisos')
+        
+        grupo.name = nombre
+        grupo.permissions.set(permisos_ids)
+        grupo.save()
+        
+        registrar_actividad(
+            request.user,
+            'EDITAR',
+            f'Editó el grupo: {nombre}',
+            request
+        )
+        
+        messages.success(request, f'Grupo "{nombre}" actualizado.')
+        return redirect('usuarios:gestionar_grupos')
+    
+    # Obtener permisos organizados
+    permisos = Permission.objects.select_related('content_type').order_by('content_type__app_label', 'content_type__model')
+    
+    permisos_organizados = {}
+    for permiso in permisos:
+        app = permiso.content_type.app_label
+        modelo = permiso.content_type.model
+        
+        if app not in permisos_organizados:
+            permisos_organizados[app] = {}
+        
+        if modelo not in permisos_organizados[app]:
+            permisos_organizados[app][modelo] = []
+        
+        permisos_organizados[app][modelo].append(permiso)
+    
+    context = {
+        'grupo': grupo,
+        'permisos_organizados': permisos_organizados,
+        'permisos_grupo': list(grupo.permissions.values_list('id', flat=True))
+    }
+    return render(request, 'usuarios/editar_grupo.html', context)
+
+
+@login_required
+@user_passes_test(es_admin)
+@require_POST
+def eliminar_grupo_view(request, grupo_id):
+    """Eliminar grupo"""
+    grupo = get_object_or_404(Group, id=grupo_id)
+    nombre = grupo.name
+    grupo.delete()
+    
+    registrar_actividad(
+        request.user,
+        'ELIMINAR',
+        f'Eliminó el grupo: {nombre}',
+        request
+    )
+    
+    messages.success(request, f'Grupo "{nombre}" eliminado.')
+    return redirect('usuarios:gestionar_grupos')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @login_required

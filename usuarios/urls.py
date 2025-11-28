@@ -37,18 +37,13 @@ urlpatterns = [
     path('categoria/desactivar/<int:categoria_id>/', views.desactivar_categoria, name='desactivar_categoria'),
     path('proveedor/desactivar/<int:proveedor_id>/', views.desactivar_proveedor, name='desactivar_proveedor'),
     path('usuario/desactivar/<int:usuario_id>/', views.desactivar_usuario, name='desactivar_usuario'),
-
-   
-
-
-
-
-
-
-
-
     # Gestión avanzada de usuarios (solo admins)
     path('editar-completo/<int:usuario_id>/', views.editar_usuario_completo_view, name='editar_usuario_completo'),
     path('resetear-password/<int:usuario_id>/', views.resetear_password_view, name='resetear_password'),
     path('eliminar-usuario/<int:usuario_id>/', views.eliminar_usuario_view, name='eliminar_usuario'),
+    path('grupos/', views.gestionar_grupos_view, name='gestionar_grupos'),
+    path('grupos/crear/', views.crear_grupo_view, name='crear_grupo'),
+    path('grupos/editar/<int:grupo_id>/', views.editar_grupo_view, name='editar_grupo'),
+    path('grupos/eliminar/<int:grupo_id>/', views.eliminar_grupo_view, name='eliminar_grupo'),
 ]
+

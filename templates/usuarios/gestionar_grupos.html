@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestionar Grupos - SISBAR{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2 mb-1">👥 Gestionar Grupos</h1>
+            <p class="text-muted">Administra grupos de usuarios y sus permisos</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'usuarios:crear_grupo' %}" class="btn btn-primary">
+                ➕ Crear Grupo
+            </a>
+        </div>
+    </div>
+
+    <!-- Información -->
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>¿Qué son los grupos?</strong> Los grupos permiten asignar permisos a múltiples usuarios de manera eficiente. En lugar de configurar permisos individualmente, puedes crear grupos como "Gerentes", "Vendedores", etc.
+    </div>
+
+    <!-- Lista de grupos -->
+    <div class="row g-3">
+        {% if grupos %}
+            {% for grupo in grupos %}
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-gradient text-white" 
+                         style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <h5 class="mb-0">{{ grupo.name }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-muted mb-3">Permisos asignados ({{ grupo.permissions.count }})</h6>
+                        
+                        {% if grupo.permissions.all %}
+                        <div class="mb-3" style="max-height: 200px; overflow-y: auto;">
+                            {% for permiso in grupo.permissions.all %}
+                            <span class="badge bg-light text-dark border me-1 mb-1">
+                                <i class="bi bi-shield-check me-1"></i>
+                                {{ permiso.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="text-muted"><small>Sin permisos asignados</small></p>
+                        {% endif %}
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="bi bi-people me-1"></i>
+                                    {{ grupo.user_set.count }} usuario(s)
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'usuarios:editar_grupo' grupo.id %}" class="btn btn-primary">
+                                    <i class="bi bi-pencil"></i> Editar
+                                </a>
+                                <form method="post" action="{% url 'usuarios:eliminar_grupo' grupo.id %}" 
+                                      style="display:inline"
+                                      onsubmit="return confirm('¿Eliminar el grupo {{ grupo.name }}?\n\nLos usuarios del grupo NO serán eliminados, solo perderán estos permisos.')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning text-center">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    <h5>No hay grupos creados</h5>
+                    <p class="mb-3">Crea tu primer grupo para organizar permisos</p>
+                    <a href="{% url 'usuarios:crear_grupo' %}" class="btn btn-primary">
+                        ➕ Crear Primer Grupo
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

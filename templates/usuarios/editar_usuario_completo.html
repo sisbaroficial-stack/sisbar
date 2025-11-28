@@ -216,4 +216,47 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+<div class="mb-4">
+    <label class="form-label fw-semibold">
+        <i class="bi bi-shield-check me-2"></i>Grupos y Permisos
+    </label>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted small mb-3">
+                Los grupos permiten asignar múltiples permisos de manera eficiente. 
+                El usuario heredará todos los permisos de los grupos seleccionados.
+            </p>
+            
+            {% if grupos_disponibles %}
+                {% for grupo in grupos_disponibles %}
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" 
+                           name="grupos" value="{{ grupo.id }}" 
+                           id="grupo_{{ grupo.id }}"
+                           {% if grupo.id in grupos_usuario %}checked{% endif %}>
+                    <label class="form-check-label" for="grupo_{{ grupo.id }}">
+                        <strong>{{ grupo.name }}</strong>
+                        <small class="text-muted d-block">
+                            {{ grupo.permissions.count }} permiso(s)
+                        </small>
+                    </label>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <i class="bi bi-info-circle me-1"></i>
+                        No hay grupos creados. 
+                        <a href="{% url 'usuarios:gestionar_grupos' %}" target="_blank">Crear grupos</a>
+                    </small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
