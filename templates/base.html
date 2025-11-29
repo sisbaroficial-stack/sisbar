@@ -55,24 +55,64 @@
             -webkit-text-fill-color: transparent;
         }
         
-        /* Sidebar */
+                /* Sidebar */
+        /* ========== SIDEBAR COLAPSABLE BARRA LATERAL IZQUIERDA ========== */
         .sidebar {
-            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 56px; /* Altura del navbar */
+            height: calc(100vh - 56px);
+            width: 70px; /* Colapsado */
             background: white;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px 0;
+            transition: width 0.3s ease;
+            z-index: 999;
+            overflow: hidden;
+            padding: 0;
         }
-        
+
+        .sidebar:hover {
+            width: 260px; /* Expandido */
+        }
+
+        .sidebar .position-sticky {
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Ocultar scrollbar */
+        .sidebar .position-sticky::-webkit-scrollbar {
+            width: 0;
+        }
+                
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
+            padding: 15px 15px;
             color: #4b5563;
             text-decoration: none;
             transition: all 0.3s ease;
             border-left: 3px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
         }
-        
+
+        .sidebar-link i {
+            min-width: 40px;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-right: 15px;
+        }
+
+        .sidebar-link span {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar:hover .sidebar-link span {
+            opacity: 1;
+        }
         .sidebar-link:hover,
         .sidebar-link.active {
             background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
@@ -87,9 +127,13 @@
         
         /* Main content */
         .main-content {
+            margin-left: 70px; /* Mismo ancho que sidebar colapsado */
             padding: 30px;
             background: var(--light-color);
-            min-height: 100vh;
+            min-height: calc(100vh - 56px);
+            transition: margin-left 0.3s ease;
+            width: calc(100% - 70px);
+            
         }
         
         /* Cards */
@@ -177,20 +221,27 @@
             to { transform: rotate(360deg); }
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                width: 250px;
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-            
-            .sidebar.show {
-                left: 0;
-            }
-        }
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        left: -100%;
+        width: 250px;
+    }
+    
+    .sidebar.show {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .main-content {
+        margin-left: 70px !important;
+    }
+}
 
         /* Modo Oscuro */
         body.modo-oscuro {
@@ -206,6 +257,10 @@
         body.modo-oscuro .sidebar {
             background: #1a1a2e;
             color: #e4e4e4;
+        }
+
+        body.modo-oscuro .sidebar:hover {
+            box-shadow: 2px 0 20px rgba(102, 126, 234, 0.3);
         }
         
         body.modo-oscuro .sidebar-link {
@@ -444,92 +499,93 @@
     
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
-                <div class="position-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
-                               href="{% url 'dashboard:home' %}">
-                                <i class="bi bi-speedometer2"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        
-                        <!-- Solo para usuarios con permisos -->
-                        {% if user.puede_gestionar_inventario %}
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.url_name == 'listar_productos' %}active{% endif %}" 
-                                href="{% url 'inventario:listar_productos' %}">
-                                <i class="bi bi-box-seam"></i>
-                                Productos
-                            </a>
-                        </li>
+    <!-- SIDEBAR BARRA IZQUIERDA QUEDA OCULTA -->
+    <nav class="sidebar">
+        <div class="position-sticky">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                    href="{% url 'dashboard:home' %}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                
+                <!-- Solo para usuarios con permisos -->
+                {% if user.puede_gestionar_inventario %}
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.url_name == 'listar_productos' %}active{% endif %}" 
+                        href="{% url 'inventario:listar_productos' %}">
+                        <i class="bi bi-box-seam"></i>
+                        <span>Productos</span>
+                    </a>
+                </li>
 
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.url_name == 'descontar_producto' %}active{% endif %}" 
-                               href="{% url 'inventario:descontar_producto' %}">
-                                <i class="bi bi-arrow-down-circle"></i>
-                                Descontar Producto
-                            </a>
-                        </li>
-                        {% endif %}
-                        {% if user.puede_aprobar %}
-                        <li class="nav-item">
-                                <a class="sidebar-link {% if request.resolver_match.app_name == 'categorias' %}active{% endif %}" 
-                                   href="{% url 'categorias:listar' %}">
-                                <i class="bi bi-tags"></i>
-                                Categorías
-                            </a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.app_name == 'proveedores' %}active{% endif %}" 
-                               href="{% url 'proveedores:listar' %}">
-                                <i class="bi bi-truck"></i>
-                                Proveedores
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.app_name == 'movimientos' %}active{% endif %}" 
-                               href="{% url 'movimientos:listar' %}">
-                               <i class="bi bi-arrow-left-right"></i>
-                                Movimientos
-                            </a>
-                        </li>
-                        
-                        {% if user.puede_aprobar %}
-                        <li class="nav-item">
-                            <a class="sidebar-link {% if request.resolver_match.app_name == 'reportes' %}active{% endif %}" 
-                               href="{% url 'reportes:home' %}">
-                                <i class="bi bi-file-earmark-bar-graph"></i>
-                                Reportes
-                            </a>
-                        </li>
-                        {% endif %}
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.url_name == 'descontar_producto' %}active{% endif %}" 
+                    href="{% url 'inventario:descontar_producto' %}">
+                        <i class="bi bi-arrow-down-circle"></i>
+                        <span>Descontar Producto</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.puede_aprobar %}
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.app_name == 'categorias' %}active{% endif %}" 
+                    href="{% url 'categorias:listar' %}">
+                        <i class="bi bi-tags"></i>
+                        <span>Categorías</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.app_name == 'proveedores' %}active{% endif %}" 
+                    href="{% url 'proveedores:listar' %}">
+                        <i class="bi bi-truck"></i>
+                        <span>Proveedores</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.app_name == 'movimientos' %}active{% endif %}" 
+                    href="{% url 'movimientos:listar' %}">
+                        <i class="bi bi-arrow-left-right"></i>
+                        <span>Movimientos</span>
+                    </a>
+                </li>
+                
+                {% if user.puede_aprobar %}
+                <li class="nav-item">
+                    <a class="sidebar-link {% if request.resolver_match.app_name == 'reportes' %}active{% endif %}" 
+                    href="{% url 'reportes:home' %}">
+                        <i class="bi bi-file-earmark-bar-graph"></i>
+                        <span>Reportes</span>
+                    </a>
+                </li>
+                {% endif %}
 
-                        
-                        <li class="nav-item mt-3">
-                            <hr>
-                        </li>
-                        
-                        <!-- Solo para administradores -->
-                        {% if user.puede_aprobar %}
-                        <li class="nav-item">
-                            <a class="sidebar-link" href="{% url 'usuarios:gestionar_usuarios' %}">
-                                <i class="bi bi-people"></i>
-                                Gestionar Usuarios
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </div>
-            </nav>
+                <li class="nav-item mt-3">
+                    <hr>
+                </li>
+                
+                <!-- Solo para administradores -->
+                {% if user.puede_aprobar %}
+                <li class="nav-item">
+                    <a class="sidebar-link" href="{% url 'usuarios:gestionar_usuarios' %}">
+                        <i class="bi bi-people"></i>
+                        <span>Gestionar Usuarios</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
             
             <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            <main class="main-content">
                 <!-- Mensajes del sistema -->
                 {% if messages %}
                     {% for message in messages %}

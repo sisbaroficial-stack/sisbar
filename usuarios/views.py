@@ -365,6 +365,9 @@ def toggle_usuario_view(request, usuario_id):
 def editar_usuario_completo_view(request, usuario_id):
     usuario_editar = get_object_or_404(Usuario, id=usuario_id)
 
+
+    
+
     if request.method == 'POST':
         usuario_editar.first_name = request.POST.get('first_name')
         usuario_editar.last_name = request.POST.get('last_name')
@@ -374,6 +377,14 @@ def editar_usuario_completo_view(request, usuario_id):
 
 
         nuevo_documento = request.POST.get('documento', '').strip()
+
+
+            #  para que andie pueda editar a el dueño
+    if usuario_editar.rol == 'SUPER_ADMIN' and usuario_editar != request.user:
+        messages.error(request, '🔒 No puedes editar al Super Administrador.')
+        return redirect('usuarios:gestionar_usuarios')
+    if request.method == 'POST':
+        # ... resto del código sin cambios
 
         if Usuario.objects.exclude(id=usuario_editar.id).filter(documento=nuevo_documento).exists():
             messages.error(request, "❌ Ya existe un usuario con ese número de documento.")
@@ -389,7 +400,7 @@ def editar_usuario_completo_view(request, usuario_id):
         else:
             usuario_editar.aprobado = request.POST.get('aprobado') == 'on'
 
-        # ⭐ NUEVO: Asignar grupos
+        #  NUEVO: Asignar grupos
         grupos_ids = request.POST.getlist('grupos')
         usuario_editar.groups.set(grupos_ids)
 

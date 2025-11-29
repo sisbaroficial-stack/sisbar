@@ -174,7 +174,7 @@
                                             </a>
                                         {% endif %}
 
-                                        {% if usuario != user %}
+                                        {% if usuario != user and usuario.rol != 'SUPER_ADMIN' %}
                                             <a href="{% url 'usuarios:toggle_usuario' usuario.id %}" 
                                             class="btn btn-{% if usuario.is_active %}warning{% else %}info{% endif %}"
                                             title="{% if usuario.is_active %}Desactivar{% else %}Activar{% endif %}">
@@ -182,14 +182,14 @@
                                             </a>
                                         {% endif %}
 
-                                        <!-- 🚀 BOTÓN NUEVO: EDITAR USUARIO -->
+                                        <!--  BOTÓN NUEVO: EDITAR USUARIO -->
                                         <a href="{% url 'usuarios:editar_usuario_completo' usuario.id %}" 
                                         class="btn btn-primary" title="Editar usuario">
                                             <i class="bi bi-pencil"></i>
                                         </a>
 
                                         <!-- Ver detalles en admin -->
-                                        <!-- 👁️ NUEVO BOTÓN: VER DETALLES PERSONALIZADO -->
+                                        <!--  NUEVO BOTÓN: VER DETALLES PERSONALIZADO -->
                                         <a href="{% url 'usuarios:detalle_usuario' usuario.id %}"
                                         class="btn btn-info" title="Ver detalles">
                                             <i class="bi bi-eye"></i>

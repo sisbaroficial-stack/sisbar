@@ -197,11 +197,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        {% if user.rol == 'SUPER_ADMIN' %}
                         <a href="{% url 'usuarios:resetear_password' usuario_editar.id %}" 
                            class="btn btn-warning">
                             <i class="bi bi-key me-2"></i>
                             Resetear Contraseña
                         </a>
+                        {% endif %}
                         
                         {% if usuario_editar != user %}
                         <a href="{% url 'usuarios:eliminar_usuario' usuario_editar.id %}" 

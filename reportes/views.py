@@ -179,35 +179,50 @@ def exportar_productos_pdf(request):
     elements.append(Spacer(1, 20))
     
     # Datos de la tabla
-    data = [['Código', 'Nombre', 'Categoría', 'Cantidad', 'Estado', 'Precio']]
+    data = [['Código', 'Nombre', 'Categoría', 'Cantidad', 'Estado', 'Precio', 'proveedor']]
     
     productos = Producto.objects.filter(activo=True).select_related('categoria')
     
-    for producto in productos:
+    for p in productos:
         data.append([
-            producto.codigo,
-            producto.nombre[:30],  # Truncar nombre largo
-            producto.categoria.nombre,
-            f"{producto.cantidad} {producto.get_unidad_medida_display()}",
-            producto.get_estado_display(),
-            f"${producto.precio_compra:,.2f}"
+            p.codigo,
+            p.nombre[:30],
+            p.categoria.nombre,
+            f"{p.cantidad} {p.get_unidad_medida_display()}",
+            p.get_estado_display(),
+            f"${p.precio_compra:,.2f}",
+            p.proveedor.nombre if p.proveedor else "—"
         ])
+
     
-    # Crear tabla
-    table = Table(data, colWidths=[1.2*inch, 2.5*inch, 1.5*inch, 1.2*inch, 1.2*inch, 1.2*inch])
-    
-    # Estilo de la tabla
+        # Crear tabla con anchos ajustados
+    num_cols = len(data[0])                 # Número de columnas
+    ancho_util = A4[0] - 80                 # Ancho de página MENOS márgenes (40 + 40)
+    col_width = ancho_util / num_cols       # ancho por columna
+
+    # Crear tabla con anchos ajustados automáticamente
+    table = Table(
+        data,
+        colWidths=[col_width for _ in range(num_cols)]
+    )
+
+    # Permitir que la tabla se divida entre páginas
+    table.splitByRow = True
+    table.hAlign = 'LEFT'
+    table.repeatRows = 1  # Repite encabezado en cada página
+
+    # Estilo de tabla
     table.setStyle(TableStyle([
-        # Encabezado
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#667EEA')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 10),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-        
-        # Contenido
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+
+        # Alternar colores de filas
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+
         ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
         ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
         ('ALIGN', (3, 1), (3, -1), 'CENTER'),
@@ -215,12 +230,10 @@ def exportar_productos_pdf(request):
         ('ALIGN', (5, 1), (5, -1), 'RIGHT'),
         ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 8),
-        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
-        
-        # Bordes
+
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('BOX', (0, 0), (-1, -1), 2, colors.black),
     ]))
+
     
     elements.append(table)
     
@@ -329,3 +342,4 @@ def exportar_movimientos_excel(request):
     
     wb.save(response)
     return response
+
