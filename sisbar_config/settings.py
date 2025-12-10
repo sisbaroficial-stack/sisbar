@@ -85,14 +85,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sisbar_config.wsgi.application'
 
-# Database - SQLite por defecto (Django)
-DATABASES = {
-    'default': dj_database_url.config(
-        default=config('DATABASE_URL', default='sqlite:///db.sqlite3'),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# -------------------------
+# BASE DE DATOS PARA LOCAL + RENDER
+# -------------------------
+
+# Detectar si estamos ejecutando en Render
+IS_RENDER = "RENDER" in os.environ
+
+if IS_RENDER:
+    # Render usa PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    # Local usa SQLite como antes
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
